@@ -1,0 +1,8 @@
+.DS_Store
+*.dSYM
+*.exe
+*.swp
+*.o
+settings.dat
+data/*
+
