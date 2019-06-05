@@ -19,6 +19,8 @@ all: docs coverage test
 
 %.a: CFLAGS_OUTPUT := -c
 %.a: $(SOURCE)
+	mkdir -p tmp
+	mkdir -p bin
 	$(BUILDCMD)
 	mv *.o tmp
 	ar rvs $@ tmp/*.o
@@ -62,6 +64,7 @@ coverage: bin/coverage.html
 
 # Generate documentation.
 docs:
+	mkdir -p bin
 	cp doc/*.css bin
 	pandoc doc/documentation.md \
 		--metadata pagetitle="${APP} Documentation" \
@@ -82,8 +85,8 @@ docs:
 
 clean:
 	rm -f $(TEST_EXE)
-	rm -rf bin/*
-	rm -rf tmp/*
+	rm -rf bin
+	rm -rf tmp
 	rm -f *.gcda # If Tests fail .gcda and .gcno are
 	rm -f *.gcno # left in project root.
 	rm -rf *.dSYM
