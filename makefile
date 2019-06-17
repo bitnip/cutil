@@ -1,8 +1,4 @@
-SOURCE= \
-	src/string.c
-TEST_SOURCE= \
-	src/test.c \
-	src/string_test.c
+include cfg/cfg.mk
 
 MAKEFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
 APP:=$(notdir $(patsubst %/,%,$(dir $(MAKEFILE_PATH))))
