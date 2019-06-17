@@ -1,9 +1,9 @@
-include cfg/cfg.mk
-
 MAKEFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
 APP:=$(notdir $(patsubst %/,%,$(dir $(MAKEFILE_PATH))))
 TEST_EXE:=bin/test_$(APP)
 COVERAGE_EXE:=bin/coverage_$(APP)
+
+include cfg/cfg.mk
 
 CC=gcc
 CFLAGS=-Wall -Werror -pedantic -std=c11
