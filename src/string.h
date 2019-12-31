@@ -11,17 +11,27 @@ extern "C"{
 extern const char ASCII_H_DELIMITERS[];
 extern const char ASCII_V_DELIMITERS[];
 
-char isWhitespace(char character);
-
+/*TODO: Name these better, or change their interface.*/
 char* afterWhitespace(char* string);
+char* afterInteger(char *toCheck);
+char* afterNumber(char *toCheck);
+char* afterQuotedString(char* toCheck);
+char* afterLineBreak(char* toCheck);
+char* afterDigits(const char* toCheck);
 
-char isNumber(char toCheck);
+unsigned int strCpyTo(char *target, const char *value);
+unsigned int strCpyNTo(char *target, unsigned int length, const char *value);
 
-char* isInteger(const char* toCheck);
-
-char* startsWith(const char* toCheck, const char* toMatch);
-
-char* endsWith(const char* toCheck, const char* toMatch);
+unsigned long long strHash(const void* ptr);
+char* strCopy(const char* string);
+char* strCopyN(const char* string, unsigned int length);
+char* strJoin(const char* a, const char* b);
+char strCmp(const char* toCheck, const char* toMatch);
+char strCmpN(const char* toCheck, const char* toMatch, unsigned int size);
+char* strStartsWith(const char* toCheck, const char* toMatch);
+char* strEndsWith(const char* toCheck, const char* toMatch);
+void strTrimAfterLast(char* string, const char* delimiter);
+const char *strFindLast(const char* str, char value);
 
 char tokenize(
     char** thisToken,
@@ -29,11 +39,11 @@ char tokenize(
     char** nextToken,
     const char* delimiters);
 
-char* stringCopy(const char* string);
-
-void stringTrimAfterLast(char* string, const char* delimiter);
-
-char* stringJoin(const char* a, const char* b);
+char *strReplace(
+    char *input,
+    unsigned int offset,
+    unsigned int toRemove,
+    const char *toInsert);
 
 #ifdef __cplusplus
 }

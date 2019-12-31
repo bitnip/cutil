@@ -2,43 +2,123 @@
 
 const char ASCII_H_DELIMITERS[] = " \t";
 const char ASCII_V_DELIMITERS[] = "\n\r";
-char isWhitespace(char character)
-{
+
+char isWhitespaceChar(char character) {
     const char *delimiter = &(ASCII_H_DELIMITERS[0]);
     while (*delimiter) if (character == *(delimiter++)) return 1;
     return 0;
 }
 
 char* afterWhitespace(char* s) {
-    while (isWhitespace(*s)) s++;
+    while (isWhitespaceChar(*s)) s++;
     return s;
 }
 
-char isNumber(char toCheck) {
+char isDigitChar(char toCheck) {
     return toCheck >= 48 && toCheck <= 57;
 }
 
-char* isInteger(const char* toCheck) {
-    while (*toCheck) {
-        if (!isNumber(*toCheck)) break;
+char* afterDigits(const char* toCheck) {
+    while(*toCheck) {
+        if(!isDigitChar(*toCheck)) break;
         toCheck++;
     }
     return (char*) toCheck;
 }
 
-char* startsWith(const char* toCheck, const char* toMatch) {
+char* afterInteger(char *toCheck) {
+    char *offset = toCheck;
+    if(*toCheck == '-' || *toCheck == '+') {
+        // Possibly number starting with sign.
+        offset = afterDigits(1+toCheck);
+        if(offset == 1+toCheck) {
+            // No number after sign.
+            return toCheck;
+        }
+    } else {
+        // Possibly number starting with integer.
+        offset = afterDigits(offset);
+        if(offset == toCheck) {
+            // No integer portion.
+            return toCheck;
+        }
+    }
+    return offset;
+}
+
+char* afterNumber(char* toCheck) {
+    char* offset = afterInteger(toCheck);
+    if(offset==toCheck) return toCheck;
+    if(*offset == ',' || *offset == '.') {
+        // Possibly decimal section.
+        toCheck = afterDigits(1+offset);
+        if(toCheck != 1+offset) {
+            offset = toCheck;
+        }
+    }
+    if(*offset == 'e' || *offset == 'E') {
+        toCheck = afterInteger(1+offset);
+        if(toCheck != 1+offset) {
+            offset = toCheck;
+        }
+    }
+    return offset;
+}
+
+char *afterQuotedString(char *toCheck) {
+    if(*toCheck != '"') return toCheck;
+    char *offset = 1+toCheck;
+    char escaped = 0;
+    while(*offset) {
+        if(*offset == '\\') {
+            escaped = 1;
+            offset++;
+            continue;
+        }
+        if(!escaped && *offset == '"') {
+            return 1 + offset;
+        }
+        escaped = 0;
+        offset++;
+    }
+    return toCheck;
+}
+
+char* afterLineBreak(char* toCheck) {
+    if(*toCheck == '\r') toCheck++;
+    if(*toCheck == '\n') toCheck++;
+    return toCheck;
+}
+
+char strCmpN(const char* toCheck, const char* toMatch, unsigned int size) {
+    while(size--) {
+        char result = *toMatch++ - *toCheck++;
+        if(result) return result;
+    }
+    return 0;
+}
+
+char strCmp(const char* toCheck, const char* toMatch) {
+    do {
+        char result = *toMatch - *toCheck++;
+        if(result) return result;
+    } while(*(toMatch++));
+    return 0;
+}
+
+char* strStartsWith(const char* toCheck, const char* toMatch) {
     while(*toMatch) {
         if(*toMatch++ != *toCheck++) return NULL;
     }
     return (char*)toCheck;
 }
 
-char* endsWith(const char* toCheck, const char* toMatch) {
+char* strEndsWith(const char* toCheck, const char* toMatch) {
     if(toCheck == NULL || toMatch == NULL) return 0;
     unsigned int toCheckLength = strlen(toCheck);
     unsigned int toMatchLength = strlen(toMatch);
     const char* toCheckOffset = toCheck + toCheckLength - toMatchLength;
-    return startsWith(toCheckOffset, toMatch);
+    return strStartsWith(toCheckOffset, toMatch);
 }
 
 char tokenize(
@@ -46,7 +126,8 @@ char tokenize(
     char** nextDelimiter,
     char** nextToken,
     const char* delimiters) {
-    /*Return token, move *nextDelimiter to first delimiter.
+    //TODO: beter doc. Maybe `Returns where the current token terminates
+    /*Return true if *nextToken , move *nextDelimiter to first delimiter.
     Assumes: thisToken != NULL
     Note:
       *thisToken==*nextDelim implies token equals empty string \0.
@@ -70,11 +151,44 @@ char tokenize(
     } while (1);
 }
 
-char* stringCopy(const char* string) {
+unsigned int strCpyTo(char *target, const char *value) {
+    unsigned int byteCount = 0;
+    while(*value) {
+        *(target++) = *(value++);
+        byteCount++;
+    }
+    return byteCount;
+}
+
+unsigned int strCpyNTo(char *target, unsigned int length, const char *value) {
+    unsigned int byteCount = 0;
+    while(*value && length--) {
+        *(target++) = *(value++);
+        byteCount++;
+    }
+    return byteCount;
+}
+
+char* strCopy(const char* string) {
     if (!string) return NULL;
-    unsigned int length = strlen(string) + 1;
-    char* newString = (char *) malloc(length);
-    return newString ? (char *) memcpy(newString, string, length) : NULL;
+    unsigned int length = strlen(string);
+    char *newString = (char *) malloc(length + 1);
+    newString[length] = 0;
+    if(!newString) return NULL;
+
+    strCpyTo(newString, string);
+    return newString;
+}
+
+char* strCopyN(const char* string, unsigned int length) {
+    /*Returns a string of length+1 bytes, copies string until length or \0.*/
+    char* result = (char *)malloc(length + 1);
+    char* ptr = result;
+    while(length-- && *string) {
+        *(ptr++) = *(string++);
+    }
+    *ptr = 0;
+    return result;
 }
 
 void stringTrimAfterLast(char* string, const char* delimiter) {
@@ -90,7 +204,7 @@ void stringTrimAfterLast(char* string, const char* delimiter) {
     *++lastToken = '\0';
 }
 
-char* stringJoin(const char* a, const char* b) {
+char* strJoin(const char* a, const char* b) {
     unsigned int aLen = strlen(a);
     unsigned int bLen = strlen(b);
     unsigned int newStrLen = aLen + bLen;
@@ -101,4 +215,47 @@ char* stringJoin(const char* a, const char* b) {
         str[newStrLen] = 0;
     }
     return str;
+}
+
+const char *strFindLast(const char *str, char value) {
+    const char *begining = str;
+    while(*str) str++;
+    while(str >= begining) {
+        if(*str==value) return str;
+        str--;
+    }
+    return NULL;
+}
+
+unsigned long long strHash(const void* string) {
+    const int p = 31;
+    const int m = 1e9+9;
+    unsigned long long hash = 0;
+    unsigned long long pPow = 1;
+    char c;
+    char* ptr = (char*)string;
+    while((c = *ptr++)) {
+        hash = (hash + (c - 'a' + 1) * pPow) % m;
+        pPow = (pPow * p) % m;
+    }
+    return hash;
+}
+
+char *strReplace(
+        char *input,
+        unsigned int offset,
+        unsigned int toRemove,
+        const char *toInsert) {
+    unsigned int inputLength = strlen(input);
+
+    if(offset+toRemove > inputLength) return NULL;
+
+    unsigned int insertLength = strlen(toInsert);
+    unsigned int resultLength = inputLength+insertLength-toRemove;
+    char *result = (char *)malloc(sizeof(char)*(resultLength+1));
+    result[resultLength] = 0;
+    memcpy(result, input, offset);
+    memcpy(result+offset, toInsert, insertLength);
+    memcpy(result+offset+insertLength, input+offset+toRemove, resultLength-offset-insertLength);
+    return result;
 }

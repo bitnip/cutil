@@ -3,66 +3,152 @@
 
 void oneCharacterInteger() {
     char input[] = "1";
-    char* offset = isInteger(input);
+    char* offset = afterInteger(input);
     assertTrue(input + 1 == offset);
 }
 
 void multiCharacterInteger() {
     char input[] = "255";
-    char* offset = isInteger(input);
+    char* offset = afterInteger(input);
     assertTrue(input + 3 == offset);
+}
+
+void positiveInteger() {
+    char input[] = "+123";
+    char* offset = afterInteger(input);
+    assertTrue(input + 4 == offset);
+}
+
+void negativeInteger() {
+    char input[] = "-456";
+    char* offset = afterInteger(input);
+    assertTrue(input + 4 == offset);
 }
 
 void emptyStringNotInteger() {
     char input[] = "\0";
-    char* offset = isInteger(input);
+    char* offset = afterInteger(input);
     assertTrue(input == offset);
 }
 
 void letterNotInteger() {
     char input[] = "a";
-    char* offset = isInteger(input);
+    char* offset = afterInteger(input);
     assertTrue(input == offset);
 }
 
 void mixedIntegerAndLetter() {
     char input[] = "1a";
-    char* offset = isInteger(input);
+    char* offset = afterInteger(input);
     assertTrue(input + 1 == offset);
 }
 
+void integerIsNumber() {
+    char input[] = "789";
+    char *offset = afterNumber(input);
+    assertTrue(input + 3 == offset);
+}
+
+void decimalIsNumber() {
+    char input[] = "1.0";
+    char *offset = afterNumber(input);
+    assertTrue(input + 3 == offset);
+}
+
+void exponantIsNumber() {
+    char input[] = "1.0E10";
+    char *offset = afterNumber(input);
+    assertTrue(input + 6 == offset);
+}
+
+void positiveExponantIsNumber() {
+    char input[] = "+1.0E+10";
+    char *offset = afterNumber(input);
+    assertTrue(input + 8 == offset);
+}
+
+void negativeExponantIsNumber() {
+    char input[] = "-1.0E-10";
+    char *offset = afterNumber(input);
+    assertTrue(input + 8 == offset);
+}
+
+void emptyStringNotQuotedString() {
+    char input[] = "";
+    char *offset = afterQuotedString(input);
+    assertTrue(input == offset);
+}
+
+void emptyQuotesAreQuotedString() {
+    char input[] = "\"\"";
+    char *offset = afterQuotedString(input);
+    assertTrue(input + 2 == offset);
+}
+
+void quotedSingleCharacterIsQuotedString() {
+    char input[] = "\"a\"";
+    char *offset = afterQuotedString(input);
+    assertTrue(input + 3 == offset);
+}
+
+void quotedEscapedQuoteIsQuotedString() {
+    char input[] = "\"\\\"\"";
+    char *offset = afterQuotedString(input);
+    assertTrue(input + 4 == offset);
+}
+
+void cmpEmptyStrings() {
+    char input[] = "";
+    char result = strCmp(input, input);
+    assertIntegersEqual(result, 0);
+}
+
+void cmpDifferentStrings() {
+    char input1[] = "a";
+    char input2[] = "b";
+    char result = strCmp(input1, input2);
+    assertIntegersEqual(result, 1);
+}
+
+void cmpDifferentLengthStrings() {
+    char input1[] = "aa";
+    char input2[] = "ab";
+    char result = strCmp(input1, input2);
+    assertIntegersEqual(result, 1);
+}
+
 void multiCharacterMatch() {
-    char* result = startsWith("start", "st");
+    char* result = strStartsWith("start", "st");
     assertNotNull(result);
 }
 
 void singleCharacterMatch() {
-    char* result = startsWith("start", "s");
+    char* result = strStartsWith("start", "s");
     assertNotNull(result);
 }
 
 void startsWithIdenticalInputIsTrue() {
-    char* result = startsWith("asdf", "asdf");
+    char* result = strStartsWith("asdf", "asdf");
     assertNotNull(result);
 }
 
 void emptyStringsMatch() {
-    char* result = startsWith("", "");
+    char* result = strStartsWith("", "");
     assertNotNull(result);
 }
 
 void emptyStringDoesntStartWithCharacter() {
-    char* result = startsWith("", "a");
+    char* result = strStartsWith("", "a");
     assertIsNull(result);
 }
 
 void multiCharacterDontMatch() {
-    char* result = startsWith("asdf", "ab");
+    char* result = strStartsWith("asdf", "ab");
     assertIsNull(result);
 }
 
 void fullMatchMustExist() {
-    char* result = startsWith("as", "asdf");
+    char* result = strStartsWith("as", "asdf");
     assertIsNull(result);
 }
 
@@ -134,12 +220,53 @@ void testTokenize() {
     assertFalse(hasToken);
 }
 
+void testStrReplace() {
+    char ello[] = "ello"; 
+    char *result = strReplace(ello, 0, 0, "h");
+    assertStringsEqual(result, "hello");
+    free(result);
+
+    char *wonderful = "wonderful";
+    result = strReplace(wonderful, 2, 4, "e");
+    assertStringsEqual(result, "woeful");
+    free(result);
+
+    char *empty = "";
+    result = strReplace(empty, 0, 0, "x");
+    assertStringsEqual(result, "x");
+    free(result);
+}
+
+void testStrCmp() {
+    unsigned int result = strCmp("Apple", "A");
+    assertIntegersEqual(result, -'p');
+}
+
+void testStrCopy() {
+    char *result = strCopy(NULL);
+    assertPointersEqual(result, NULL);
+}
+
 void stringTest() {
     oneCharacterInteger();
     multiCharacterInteger();
     letterNotInteger();
     mixedIntegerAndLetter();
     emptyStringNotInteger();
+    positiveInteger();
+    negativeInteger();
+    integerIsNumber();
+    decimalIsNumber();
+    exponantIsNumber();
+    positiveExponantIsNumber();
+    negativeExponantIsNumber();
+    emptyStringNotQuotedString();
+    emptyQuotesAreQuotedString();
+    quotedSingleCharacterIsQuotedString();
+    quotedEscapedQuoteIsQuotedString();
+    cmpEmptyStrings();
+    cmpDifferentStrings();
+    cmpDifferentLengthStrings();
 
     multiCharacterMatch();
     singleCharacterMatch();
@@ -148,7 +275,10 @@ void stringTest() {
     multiCharacterDontMatch();
     fullMatchMustExist();
     startsWithIdenticalInputIsTrue();
+    testStrCmp();
+    testStrCopy();
 
     testTokenize();
     testTokenize2();
+    testStrReplace();
 }

@@ -5,6 +5,7 @@ extern "C"{
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include "math.h"
 
 extern int asserts_failed;
@@ -13,7 +14,7 @@ extern int asserts_passed;
 #define ASSERT_MACRO(condition, ...) \
 if((condition)) \
 { \
-    printf("[Failure] %s\n", __func__); \
+    printf("[Failure] %s:%d %s\n", __FILE__, __LINE__, __func__); \
     printf(__VA_ARGS__); \
     asserts_failed++; \
     return; \
@@ -43,7 +44,7 @@ ASSERT_MACRO( \
 #define assertPointersEqual(actual, expected) \
 ASSERT_MACRO( \
     (actual) != (expected), \
-    "\tActual != Expected\n" \
+    "\tActual: 0x%p Expected: 0x%p\n", (void *)(actual), (void *)(expected) \
 );
 
 #define assertTrue(result) \

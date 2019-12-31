@@ -5,9 +5,9 @@ COVERAGE_EXE:=bin/coverage_$(APP)
 
 include cfg/cfg.mk
 
-CC=gcc
+CC=x86_64-w64-mingw32-gcc
 CFLAGS=-Wall -Werror -pedantic -std=c11
-CFLAGS_COVERAGE=-coverage -fprofile-arcs -O0
+CFLAGS_COVERAGE=-coverage -fprofile-arcs -fprofile-dir=tmp -O0
 CFLAGS_DEBUG=-g -ggdb
 BUILDCMD=${CC} ${CFLAGS_OUTPUT} ${CFLAGS} ${INCLUDES} $^ ${LIBRARIES} ${FRAMEWORKS}
 
@@ -44,7 +44,6 @@ bin/coverage.html: CFLAGS+=$(CFLAGS_DEBUG) $(CFLAGS_COVERAGE)
 bin/coverage.html: $(COVERAGE_EXE)
 	./$<
 	mv *.gcno tmp
-	mv *.gcda tmp
 	py -m gcovr \
 		--root . \
 		--object-directory tmp \
@@ -80,7 +79,6 @@ docs:
 		-o bin/documentation.html
 
 clean:
-	rm -f $(TEST_EXE)
 	rm -rf bin
 	rm -rf tmp
 	rm -f *.gcda # If Tests fail .gcda and .gcno are
