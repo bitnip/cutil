@@ -16,7 +16,7 @@ void testParseFileScheme() {
     assertIntegersEqual(result, 0);
 
     assertStringsEqual(uri.scheme, "file");
-    assertStringsEqual(uri.authority.host, "");
+    assertStringsEqual(uri.host, "");
     assertStringsEqual(uri.path, "/path/to/file.ext");
 }
 
@@ -27,7 +27,7 @@ void testParseFileScheme2() {
     assertIntegersEqual(result, 0);
 
     assertStringsEqual(uri.scheme, "file");
-    assertStringsEqual(uri.authority.host, "");
+    assertStringsEqual(uri.host, "");
     assertStringsEqual(uri.path, "/config.json");
 }
 
@@ -38,7 +38,7 @@ void testParseFileScheme3() {
     assertIntegersEqual(result, 0);
 
     assertStringsEqual(uri.scheme, "file");
-    assertPointersEqual(uri.authority.host, NULL);
+    assertPointersEqual(uri.host, NULL);
     assertStringsEqual(uri.path, "/config.json");
 }
 
@@ -49,7 +49,11 @@ void testParseURI() {
     assertIntegersEqual(result, 0);
 
     assertStringsEqual(uri.scheme, "https");
-    assertStringsEqual(uri.authority.host, "john.doe@www.example.com:123"); // TODO
+    assertStringsEqual(uri.username, "john.doe");
+    assertIsNull(uri.password);
+    assertStringsEqual(uri.host, "www.example.com");
+    assertStringsEqual(uri.port, "123");
+    assertStringsEqual(uri.host, "www.example.com");
     assertStringsEqual(uri.path, "/forum/questions/");
     assertStringsEqual(uri.query, "tag=networking&order=newest");
     assertStringsEqual(uri.fragment, "top");
@@ -74,7 +78,7 @@ void testUriSwapExt() {
 
     assertIntegersEqual(result, 0);
 
-    char *actual = uriSwapExt(&uri, "txt");
+    char *actual = uriSwapExt(&uri, "txt", 0);
     assertStringsEqual(actual, expected);
     free(actual);
 }
@@ -87,7 +91,7 @@ void testUriSwapFile() {
 
     assertIntegersEqual(result, 0);
 
-    char *actual = uriSwapFile(&uri, "dragon.mtl");
+    char *actual = uriSwapFile(&uri, "dragon.mtl", 0);
     assertStringsEqual(actual, expected);
     free(actual);
 }
@@ -100,9 +104,79 @@ void testUriSwapFile2() {
 
     assertIntegersEqual(result, 0);
 
-    char *actual = uriSwapFile(&uri, "dragon.mtl");
+    char *actual = uriSwapFile(&uri, "dragon.mtl", 0);
     assertStringsEqual(actual, expected);
     free(actual);
+}
+
+void testParseURINoQueryWithFragment() {
+    char input[] = "file:/data/city/concrete_barrier.obj#Barrier";
+    struct URI uri;
+    int result = parseURI(&uri, input);
+    assertIntegersEqual(result, 0);
+    assertStringsEqual(uri.scheme, "file");
+    assertIsNull(uri.host);
+    assertStringsEqual(uri.path, "/data/city/concrete_barrier.obj");
+    assertIsNull(uri.query);
+    assertStringsEqual(uri.fragment, "Barrier");
+
+    uriRelease(&uri);
+}
+
+void testParseURINoQueryWithFragment2() {
+    char input[] = "file:/data/vending_machine/vending_machine.obj#";
+    struct URI uri;
+    int result = parseURI(&uri, input);
+    assertIntegersEqual(result, 0);
+    assertStringsEqual(uri.scheme, "file");
+    assertIsNull(uri.host);
+    assertStringsEqual(uri.path, "/data/vending_machine/vending_machine.obj");
+    assertIsNull(uri.query);
+    assertStringsEqual(uri.fragment, "");
+
+    uriRelease(&uri);
+}
+
+void testURIStrip() {
+    char input[] = "file://user:pass@host:port/a/path/?query1=value1&query2=value2#fragment";
+    struct URI uri;
+    int result = parseURI(&uri, input);
+    assertIntegersEqual(result, 0);
+
+    // Test strippng the scheme.
+    char *output = uriStrip(&uri, URI_SCHEME);
+    assertStringsEqual(output, "//user:pass@host:port/a/path/?query1=value1&query2=value2#fragment");
+    free(output);
+    // Test strippng the username.
+    output = uriStrip(&uri, URI_USERNAME);
+    assertStringsEqual(output, "file://:pass@host:port/a/path/?query1=value1&query2=value2#fragment");
+    free(output);
+    // Test strippng the password.
+    output = uriStrip(&uri, URI_PASSWORD);
+    assertStringsEqual(output, "file://user@host:port/a/path/?query1=value1&query2=value2#fragment");
+    free(output);
+    // Test strippng the host.
+    output = uriStrip(&uri, URI_HOST);
+    assertStringsEqual(output, "file://user:pass@:port/a/path/?query1=value1&query2=value2#fragment");
+    free(output);
+    // Test strippng the port.
+    output = uriStrip(&uri, URI_PORT);
+    assertStringsEqual(output, "file://user:pass@host/a/path/?query1=value1&query2=value2#fragment");
+    free(output);
+    // Test strippng the path.
+    output = uriStrip(&uri, URI_PATH);
+    assertStringsEqual(output, "file://user:pass@host:port?query1=value1&query2=value2#fragment");
+    free(output);
+    // Test strippng the query.
+    output = uriStrip(&uri, URI_QUERY);
+    assertStringsEqual(output, "file://user:pass@host:port/a/path/#fragment");
+    free(output);
+    // Test strippng the fragment.
+    output = uriStrip(&uri, URI_FRAGMENT);
+    assertStringsEqual(output, "file://user:pass@host:port/a/path/?query1=value1&query2=value2");
+    free(output);
+
+    uriRelease(&uri);
 }
 
 void uriTest() {
@@ -115,4 +189,7 @@ void uriTest() {
     testUriSwapExt();
     testUriSwapFile();
     testUriSwapFile2();
+    testParseURINoQueryWithFragment();
+    testParseURINoQueryWithFragment2();
+    testURIStrip();
 }

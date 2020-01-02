@@ -3,9 +3,10 @@
 
 int parseURI(struct URI *output, const char *input) {
     output->scheme = NULL;
-    output->authority.userinfo = NULL;
-    output->authority.host = NULL;
-    output->authority.port = NULL;
+    output->username = NULL;
+    output->password = NULL;
+    output->host = NULL;
+    output->port = NULL;
     output->path = NULL;
     output->query = NULL;
     output->fragment = NULL;
@@ -17,93 +18,133 @@ int parseURI(struct URI *output, const char *input) {
     if(!tokenize(&thisToken, &nextDelim, &nextToken, ":")) return 1;
     if(!nextToken) return 1;
     output->scheme = strCopyN(thisToken, nextDelim - thisToken);
-    //printf("Scheme: %s\n", output->scheme);
 
     thisToken = nextToken;
-    //if(!tokenize(&thisToken, &nextDelim, &nextToken, ":")) return 1;
 
     char *path = NULL;
-    //printf("AAA: %s\n", thisToken);
 
     if(*thisToken == '/' && *(thisToken+1) == '/') {
-        //printf("EEE: %s %c %s\n", thisToken, *nextDelim, nextToken);
 
         if(!tokenize(&thisToken, &nextDelim, &nextToken, "/")) return 1;
-        //printf("BBB: %s\n", thisToken);
         if(!tokenize(&thisToken, &nextDelim, &nextToken, "/")) return 1;
-        //printf("CCC: %s\n", thisToken);
-        if(!tokenize(&thisToken, &nextDelim, &nextToken, "/")) return 1;
-        //printf("DDD: %s\n", thisToken);
+        if(!tokenize(&thisToken, &nextDelim, &nextToken, "/?#")) return 1;
         // TODO: Parse out.
-        output->authority.host = strCopyN(thisToken, nextDelim - thisToken);
-        //printf("Host: %s\n", output->authority.host);
+        char *authorityStart = thisToken;
+        char *authoritySep = (char *)strFindFirst(authorityStart, '@');
+        char *authorityEnd = nextDelim;
+        // Parse out username and password.
+        if(authoritySep && authorityEnd > authoritySep) {
+            char *userInfoSep = (char *)strFindFirst(authorityStart, ':');
+            if(userInfoSep && userInfoSep < authoritySep) {
+                output->username = strCopyN(authorityStart, userInfoSep - authorityStart);
+                output->password = strCopyN(userInfoSep+1, authoritySep - userInfoSep - 1);
+            } else {
+                output->username = strCopyN(authorityStart, authoritySep - authorityStart);
+            }
+        }
+        // Parse out host and port.
+        // TODO: IPV6 addresses might not work.
+        char *hostStart = authoritySep ? authoritySep+1 : authorityStart;
+        char *hostSep = (char *)strFindFirst(hostStart, ':');
+        if(hostSep && hostSep < authorityEnd) {
+            output->host = strCopyN(hostStart, hostSep - hostStart);
+            output->port = strCopyN(hostSep+1, authorityEnd - hostSep - 1);
+        } else {
+            output->host = strCopyN(hostStart, authorityEnd - hostStart);
+        }
         path = nextDelim;
     } else {
         path = nextToken;
     }
 
-    if(!tokenize(&thisToken, &nextDelim, &nextToken, "?")) return 1;
+    if(tokenize(&thisToken, &nextDelim, &nextToken, "?#")) {
+        output->path = strCopyN(path, nextDelim - path);
+    }
 
-    output->path = strCopyN(path, (nextDelim+1) - thisToken);
-    //printf("Path: %s\n", output->path);
+    if(*nextDelim == '#') {
+        output->fragment = strCopy(nextToken);
+        return 0;
+    }
 
     if(tokenize(&thisToken, &nextDelim, &nextToken, "#")) {
         output->query = strCopyN(thisToken, nextDelim - thisToken);
-        output->fragment = strCopy(nextToken);
     }
+    output->fragment = strCopy(nextToken);
 
     return 0;
 }
 
-void freeURI(struct URI *uri) {
+void uriRelease(struct URI *uri) {
     if(uri->scheme) free((void*)uri->scheme);
-    if(uri->authority.userinfo) free((void*)uri->authority.userinfo);
-    if(uri->authority.host) free((void*)uri->authority.host);
-    if(uri->authority.port) free((void*)uri->authority.port);
+    if(uri->username) free((void*)uri->username);
+    if(uri->password) free((void*)uri->password);
+    if(uri->host) free((void*)uri->host);
+    if(uri->port) free((void*)uri->port);
     if(uri->path) free((void*)uri->path);
     if(uri->query) free((void*)uri->query);
     if(uri->fragment) free((void*)uri->fragment);
 }
 
 char *uriToStr(struct URI *uri) {
-    unsigned int byteCount = 0; // ... `:` ...
-    if(uri->scheme) byteCount += strlen(uri->scheme) + 1;
+    unsigned int byteCount = 0;
 
-    if(uri->authority.host) {
-        byteCount += strlen(uri->authority.host) + 2; // ... // ...
-        if(uri->authority.userinfo) byteCount += strlen(uri->authority.userinfo) + 1; // ... @ ...
-        if(uri->authority.port) byteCount += strlen(uri->authority.port) + 1; // ... : ...
+    char hasUserInfo = uri->username || uri->password;
+    char hasAuth = hasUserInfo || uri->host || uri->port;
+
+    if(uri->scheme) byteCount += strlen(uri->scheme) + 1;
+    if(hasAuth) {
+        byteCount += 2; // Authority seperator.
+        if(uri->username) byteCount += strlen(uri->username);
+        if(uri->password) {
+            byteCount += 1; // Password seperator.
+            byteCount += strlen(uri->password);
+        }
+        if(hasUserInfo) {
+            byteCount += 1; // Userinfo seperator.
+        }
+        if(uri->host) byteCount += strlen(uri->host);
+        if(uri->port) {
+            byteCount += 1; // Port seperator.
+            byteCount += strlen(uri->port);
+        }
+    }
+    if(uri->path) byteCount += strlen(uri->path);
+    if(uri->query) {
+        byteCount += 1; // Query seperator.
+        byteCount += strlen(uri->query);
+    }
+    if(uri->fragment) {
+        byteCount += 1; // Fragment seperator.
+        byteCount += strlen(uri->fragment);
     }
 
-    if(uri->path) byteCount += strlen(uri->path);
-
-    if(uri->query) byteCount += strlen(uri->query) + 1; // ... ? ...
-    if(uri->fragment) byteCount += strlen(uri->fragment) + 1; // ... # ...
-
     char *ptr = malloc(byteCount + 1);
+    if(ptr == NULL) return NULL;
     char *result = ptr;
 
-    result[byteCount] = 0;
+    result[byteCount] = 0; // Terminate string.
 
     if(uri->scheme) {
         result += strCpyTo(result, uri->scheme);
         result += strCpyTo(result, ":");
     }
-    if(uri->authority.host) {
-        result += strCpyTo(result, "//");
-        if(uri->authority.userinfo) {
-            result += strCpyTo(result, uri->authority.userinfo);
-            result += strCpyTo(result, "@");
+    if(hasAuth) {
+        result += strCpyTo(result, "//"); // Authority seperator.
+        if(uri->username) result += strCpyTo(result, uri->username);
+        if(uri->password) {
+            result += strCpyTo(result, ":"); // Password seperator.
+            result += strCpyTo(result, uri->password);
         }
-        result += strCpyTo(result, uri->authority.host);
-        if(uri->authority.port) {
-            result += strCpyTo(result, ":");
-            result += strCpyTo(result, uri->authority.port);
+        if(hasUserInfo) {
+            result += strCpyTo(result, "@"); // Userinfo seperator.
+        }
+        if(uri->host) result += strCpyTo(result, uri->host);
+        if(uri->port) {
+            result += strCpyTo(result, ":"); // Port seperator.
+            result += strCpyTo(result, uri->port);
         }
     }
-    if(uri->path) {
-        result += strCpyTo(result, uri->path);
-    }
+    if(uri->path) result += strCpyTo(result, uri->path);
     if(uri->query) {
         result += strCpyTo(result, "?");
         result += strCpyTo(result, uri->query);
@@ -115,12 +156,15 @@ char *uriToStr(struct URI *uri) {
     return ptr;
 }
 
-char *uriSwapExt(struct URI *input, const char *ext) {
+char *uriSwapExt(struct URI *input, const char *ext, unsigned char flags) {
     struct URI tmp;
     tmp.scheme = input->scheme;
-    tmp.authority.userinfo = input->authority.userinfo;
-    tmp.authority.host = input->authority.host;
-    tmp.authority.port = input->authority.port;
+    tmp.username = input->username;
+    tmp.password = input->password;
+    tmp.host = input->host;
+    tmp.port = input->port;
+    tmp.query = input->query;
+    tmp.fragment = input->fragment;
 
     const char *dot = strFindLast(input->path, '.');
     unsigned int sansExtLength = dot ? dot - input->path : strlen(input->path);
@@ -132,35 +176,68 @@ char *uriSwapExt(struct URI *input, const char *ext) {
     tmpPath += strCpyTo(tmpPath, ".");
     tmpPath += strCpyTo(tmpPath, ext);
 
-    tmp.query = input->query;
-    tmp.fragment = input->fragment;
-
-    char *result = uriToStr(&tmp);
+    char *result = uriStrip(&tmp, flags);
     free((char*)tmp.path);
     return result;
 }
 
-char *uriSwapFile(struct URI *input, const char *file) {
+char *uriSwapFile(struct URI *input, const char *file, unsigned char flags) {
     struct URI tmp;
     tmp.scheme = input->scheme;
-    tmp.authority.userinfo = input->authority.userinfo;
-    tmp.authority.host = input->authority.host;
-    tmp.authority.port = input->authority.port;
+    tmp.username = input->username;
+    tmp.password = input->password;
+    tmp.host = input->host;
+    tmp.port = input->port;
+    tmp.query = input->query;
+    tmp.fragment = input->fragment;
 
     const char *slash = strFindLast(input->path, '/');
     unsigned int sansFileLength = slash ? slash - input->path : strlen(input->path);
     int newPathLength = sansFileLength + 1 + strlen(file);
     char *tmpPath = malloc(newPathLength + 1);
+
     tmp.path = tmpPath;
     tmpPath[newPathLength] = 0;
     tmpPath += strCpyNTo(tmpPath, sansFileLength, input->path);
     tmpPath += strCpyTo(tmpPath, "/");
     tmpPath += strCpyTo(tmpPath, file);
 
-    tmp.query = input->query;
-    tmp.fragment = input->fragment;
-
-    char *result = uriToStr(&tmp);
+    char *result = uriStrip(&tmp, flags);
     free((char*)tmp.path);
     return result;
+}
+
+char *uriGetFileName(struct URI *input) {
+    const char *start = strFindLast(input->path, '/');
+    if(start == NULL) return NULL;
+    start+=1; // Move after slash character.
+    const char *end = strFindFirst(start, '.');
+    return strCopyN(start, end-start);
+}
+
+char *charGetFileName(const char *input) {
+    struct URI uri;
+    int result;
+    if((result = parseURI(&uri, input))) {
+        uriRelease(&uri);
+        return NULL;
+    }
+    const char *start = strFindLast(uri.path, '/');
+    if(start == NULL) return NULL;
+    start+=1; // Move after slash character.
+    const char *end = strFindFirst(start, '.');
+    return strCopyN(start, end-start);
+}
+
+char *uriStrip(struct URI *uri, unsigned char flags) {
+    struct URI tmp;
+    tmp.scheme = flags & URI_SCHEME ? NULL : uri->scheme;
+    tmp.username = flags & URI_USERNAME ? NULL : uri->username;
+    tmp.password = flags & URI_PASSWORD ? NULL : uri->password;
+    tmp.host = flags & URI_HOST ? NULL : uri->host;
+    tmp.port = flags & URI_PORT ? NULL : uri->port;
+    tmp.path = flags & URI_PATH ? NULL : uri->path;
+    tmp.query = flags & URI_QUERY ? NULL : uri->query;
+    tmp.fragment = flags & URI_FRAGMENT ? NULL : uri->fragment;
+    return uriToStr(&tmp);
 }

@@ -106,6 +106,13 @@ char strCmp(const char* toCheck, const char* toMatch) {
     return 0;
 }
 
+int safeStrCmp(const char *a, const char* b) {
+    if(a == b) return 0;
+    else if(a == NULL) return -1;
+    else if(b == NULL) return 1;
+    else return strCmp(a, b);
+}
+
 char* strStartsWith(const char* toCheck, const char* toMatch) {
     while(*toMatch) {
         if(*toMatch++ != *toCheck++) return NULL;
@@ -217,6 +224,14 @@ char* strJoin(const char* a, const char* b) {
     return str;
 }
 
+const char *strFindFirst(const char *str, char value) {
+    while(*str) {
+        if(*str==value) return str;
+        str++;
+    }
+    return NULL;
+}
+
 const char *strFindLast(const char *str, char value) {
     const char *begining = str;
     while(*str) str++;
@@ -239,6 +254,15 @@ unsigned long long strHash(const void* string) {
         pPow = (pPow * p) % m;
     }
     return hash;
+}
+
+void strReplaceChar(char *input, char toReplace, char value) {
+    while(*input) {
+        if(*input == toReplace) {
+            *input = value;
+        }
+        input++;
+    }
 }
 
 char *strReplace(

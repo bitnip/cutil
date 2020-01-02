@@ -28,9 +28,11 @@ char* strCopyN(const char* string, unsigned int length);
 char* strJoin(const char* a, const char* b);
 char strCmp(const char* toCheck, const char* toMatch);
 char strCmpN(const char* toCheck, const char* toMatch, unsigned int size);
+int safeStrCmp(const char *a, const char* b);
 char* strStartsWith(const char* toCheck, const char* toMatch);
 char* strEndsWith(const char* toCheck, const char* toMatch);
 void strTrimAfterLast(char* string, const char* delimiter);
+const char *strFindFirst(const char *str, char value);
 const char *strFindLast(const char* str, char value);
 
 char tokenize(
@@ -39,6 +41,7 @@ char tokenize(
     char** nextToken,
     const char* delimiters);
 
+void strReplaceChar(char *input, char toReplace, char value);
 char *strReplace(
     char *input,
     unsigned int offset,

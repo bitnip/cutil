@@ -13,7 +13,6 @@ struct ResourceAdapter {
     struct Map schemes;
     struct Map adapterByExt;
     struct Map externalResources;
-    struct Map internalResources;
 };
 int resourceAdapterCompose(struct ResourceAdapter *);
 void resourceAdapterRelease(struct ResourceAdapter *);

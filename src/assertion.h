@@ -4,8 +4,8 @@
 extern "C"{
 #endif
 
+#include "string.h"
 #include <stdio.h>
-#include <string.h>
 #include "math.h"
 
 extern int asserts_failed;
@@ -25,7 +25,7 @@ else { \
 
 #define assertStringsEqual(actual, expected) \
 ASSERT_MACRO( \
-    !actual || !expected || strcmp((actual), (expected)), \
+    safeStrCmp((actual), (expected)), \
     "Actual: %s Expected: %s\n", (actual), (expected) \
 );
 
