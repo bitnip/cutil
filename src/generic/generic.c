@@ -27,8 +27,8 @@ struct Collection Map = {
         (void (*)(void *))mapRelease,
         NULL
     },
-    (unsigned int (*)(void*,char *,void*))mapAdd,
-    (void * (*)(void*,char *))mapGet,
+    (unsigned int (*)(void*, const char *,void*))mapAdd,
+    (void * (*)(void*, const char *))mapGet,
     (struct Iterator (*)(void *))mapIterator,
     mapNext
 };
@@ -41,8 +41,8 @@ struct Collection Array = {
         (void (*)(void *))vectorRelease,
         NULL
     },
-    (unsigned int (*)(void*, char*, void*)) vectorAddStr,
-    (void * (*)(void*, char *))vectorGetStr,
+    (unsigned int (*)(void*, const char *, void*)) vectorAddStr,
+    (void * (*)(void*, const char *))vectorGetStr,
     (struct Iterator (*)(void *))vectorIterator,
     vectorNext
 };
@@ -129,7 +129,7 @@ struct Generic *genericCompose(struct Object* object) {
     return generic;
 }
 
-struct Generic* genericGet(struct Generic *root, char* key) {
+struct Generic *genericGet(struct Generic *root, const char *key) {
     if(key == NULL || root == NULL) return NULL;
 
     struct Collection *collection = (struct Collection *)root->object;
@@ -140,7 +140,7 @@ struct Generic* genericGet(struct Generic *root, char* key) {
     return collection->get(genericData(root), key);
 }
 
-unsigned int genericAdd(struct Generic *root, char* key, struct Generic *value) {
+unsigned int genericAdd(struct Generic *root, const char *key, struct Generic *value) {
     if(root == NULL) return 0;
 
     struct Collection *collection = (struct Collection *)root->object;
@@ -170,7 +170,7 @@ struct Generic* getAt(struct Generic *root, char* path) {
     return root;
 }
 
-unsigned int addAt(struct Generic *root, char* path, struct Generic *value) {
+unsigned int addAt(struct Generic *root, char *path, struct Generic *value) {
     if(path == NULL || root == NULL) return 0;
 
     char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;

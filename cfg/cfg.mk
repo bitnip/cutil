@@ -1,4 +1,5 @@
 SOURCE= \
+	src/integer/integer.c \
 	src/string.c \
 	src/list/list.c \
 	src/list/node.c \
@@ -10,6 +11,7 @@ SOURCE= \
 	src/resource/resource.c
 TEST_SOURCE= \
 	src/test.c \
+	src/integer/integer_test.c \
 	src/string_test.c \
 	src/list/list_test.c \
 	src/vector/vector_test.c\

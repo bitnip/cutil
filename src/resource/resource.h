@@ -12,7 +12,7 @@ extern "C"{
 struct ResourceAdapter {
     struct Map schemes;
     struct Map adapterByExt;
-    struct Map externalResources;
+    struct Map resources;
 };
 int resourceAdapterCompose(struct ResourceAdapter *);
 void resourceAdapterRelease(struct ResourceAdapter *);
@@ -28,7 +28,7 @@ enum ResourceStatus {
 
 struct Resource {
     const char *uri;
-    void *data;
+    struct Generic *data;
     enum ResourceStatus status;
 };
 

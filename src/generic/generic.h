@@ -14,8 +14,8 @@ struct Object {
 
 struct Collection {
     struct Object object;
-    unsigned int (*add)(void*, char*, void*);
-    void* (*get)(void*, char*);
+    unsigned int (*add)(void*, const char*, void*);
+    void* (*get)(void*, const char*);
     struct Iterator (*iterator)(void*);
     void* (*next)(struct Iterator*);
 };
@@ -29,7 +29,7 @@ extern struct Object Float;
 extern struct Object Bool;
 extern struct Object Pointer;
 
-void* objectCompose();
+void *objectCompose();
 void objectRelease(void* object);
 long long objectHash(void* object);
 
@@ -38,12 +38,12 @@ struct Generic {
 };
 
 
-void* genericData(struct Generic *generic);
-struct Generic* genericGet(struct Generic *root, char* key);
-unsigned int genericAdd(struct Generic *root, char* key, struct Generic *value);
+void *genericData(struct Generic *generic);
+struct Generic *genericGet(struct Generic *root, const char *key);
+unsigned int genericAdd(struct Generic *root, const char *key, struct Generic *value);
 
-struct Generic* getAt(struct Generic *root, char* path);
-unsigned int addAt(struct Generic *root, char* path, struct Generic *value);
+struct Generic *getAt(struct Generic *root, char *path);
+unsigned int addAt(struct Generic *root, char *path, struct Generic *value);
 
 void genericRelease(struct Generic *element);
 struct Generic *genericCompose(struct Object* object);

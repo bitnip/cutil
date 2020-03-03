@@ -24,16 +24,16 @@ struct MapPair {
     void* value;
 };
 
-unsigned long long ptrHash(const void * ptr); // TODO: Move
+unsigned long long ptrHash(const void *ptr); // TODO: Move
 
 int mapCompose(struct Map* map);
 void mapRelease(struct Map* map);
 unsigned int mapSize(struct Map* map);
 int mapIsEmpty(const struct Map* map);
-void* mapAdd(struct Map* map, const void* key, void* item);
-void* mapGet(struct Map* map, const void* value);
+int mapAdd(struct Map* map, const void *key, void *item);
+void* mapGet(struct Map* map, const void *value);
 
-const void* mapKey(struct Iterator* iterator);
+const void* mapKey(struct Iterator *iterator);
 struct Iterator mapIterator(struct Map*);
 void* mapNext(struct Iterator*);
 

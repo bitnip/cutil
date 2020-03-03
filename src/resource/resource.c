@@ -8,7 +8,7 @@ struct Scheme fileScheme = {
     fileSave
 };
 
-const char *extFromPath(const char* path) {
+const char *extFromPath(const char *path) {
     const char *delim = strFindLast(path, '.');
     return delim ? delim+1 : NULL;
 }
@@ -22,7 +22,7 @@ int getSubResource(
         return STATUS_OK;
     }
     if(input->object == &Map.object) {
-        *output = genericGet(input, (char*)uri.fragment); // TODO Fix cast
+        *output = genericGet(input, uri.fragment); // TODO Fix cast
         return *output == NULL ? STATUS_FOUND_ERR : STATUS_OK;
     }
     return STATUS_INPUT_ERR;
@@ -35,42 +35,65 @@ int load(
     struct URI u;
     if(parseURI(&u, uri)) return STATUS_INPUT_ERR;
 
-    // Create a URI without the fragment and query portion.
+    // Create a URI for the main resource.
     char *fileURI = uriStrip(&u, URI_QUERY | URI_FRAGMENT);
 
+    // Check if the resource is already loaded.
     struct Generic *item = (struct Generic *)mapGet(
-        &ra->externalResources, fileURI);
+        &ra->resources, fileURI);
     if(item) {
+        uriRelease(&u);
         free(fileURI);
         return getSubResource(u, item, output);
     }
 
     // Check if the protocol is recognized.
     struct Scheme* scheme = (struct Scheme*)mapGet(&ra->schemes, u.scheme);
-    if(!scheme) return STATUS_SCHEME_ERR;
+    if(!scheme) {
+        uriRelease(&u);
+        free(fileURI);
+        return STATUS_SCHEME_ERR;
+    }
 
-    // Check if the format is recognized.
+    // Check if a file extension exists.
     const char* ext = extFromPath(u.path);
-    if(!ext) return STATUS_FORMAT_ERR; // TODO
+    if(!ext) {
+        uriRelease(&u);
+        free(fileURI);
+        return STATUS_FORMAT_ERR;
+    }
+    // Check if an adapter exists for this extension.
     struct Adapter *adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
-    if(!adapter) return STATUS_FORMAT_ERR;
+    if(!adapter) {
+        uriRelease(&u);
+        free(fileURI);
+        return STATUS_FORMAT_ERR;
+    }
 
+    // Load resource into buffer.
     struct Buffer buffer;
     int result = scheme->load(&u, &buffer);
-    if(result) return result;
-
+    if(result) {
+        uriRelease(&u);
+        free(fileURI);
+        return result;
+    }
+    // Parse resource.
     result = adapter->parse(ra, &u, &buffer, &item);
     free(buffer.bytes);
+    if(result) {
+        uriRelease(&u);
+        free(fileURI);
+        return result;
+    }
 
-    if(result) return result;
-
-    mapAdd(&ra->externalResources, fileURI, item);
+    // Track loaded resource.
+    mapAdd(&ra->resources, fileURI, item);
     free(fileURI);
 
     result = getSubResource(u, item, output);
 
     uriRelease(&u);
-
     return result;
 }
 
@@ -103,12 +126,12 @@ int resourceAdapterCompose(struct ResourceAdapter *ra) {
     ra->schemes.hashKey = strHash;
     mapCompose(&ra->adapterByExt);
     ra->adapterByExt.hashKey = strHash;
-    mapCompose(&ra->externalResources);
-    ra->externalResources.hashKey = strHash;
-    ra->externalResources.freeData = (void (*)(void *))genericRelease;
+    mapCompose(&ra->resources);
+    ra->resources.hashKey = strHash;
+    ra->resources.freeData = (void (*)(void *))genericRelease;
     return 0; // TODO:
 }
 
 void resourceAdapterRelease(struct ResourceAdapter *ra) {
-    mapRelease(&ra->externalResources);
+    mapRelease(&ra->resources);
 }

@@ -3,6 +3,7 @@
 int asserts_passed = 0;
 int asserts_failed = 0;
 
+void integerTest();
 void stringTest();
 void listTest();
 void vectorTest();
@@ -12,6 +13,7 @@ void resourceTest();
 void uriTest();
 
 int main() {
+    integerTest();
     stringTest();
     listTest();
     vectorTest();

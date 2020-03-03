@@ -1,7 +1,8 @@
 #include "vector.h"
+#include "../integer/integer.h"
 #include "../error.h"
 
-void vectorRelease(struct Vector* vector) {
+void vectorRelease(struct Vector *vector) {
     if(vector == NULL) return;
     if(vector->freeData) {
         for(int i = 0; i < vector->size; i++) {
@@ -11,12 +12,12 @@ void vectorRelease(struct Vector* vector) {
     free(vector->items);
 }
 
-void vectorFree(struct Vector* vector) {
+void vectorFree(struct Vector *vector) {
     vectorRelease(vector);
     free(vector);
 }
 
-int vectorCompose(struct Vector* vector) {
+int vectorCompose(struct Vector *vector) {
     vector->size = 0;
     vector->allocSize = 0;
     vector->freeData = NULL;
@@ -24,17 +25,26 @@ int vectorCompose(struct Vector* vector) {
     return STATUS_OK;
 }
 
-int vectorAddTail(struct Vector *vector, void *item) {
-    if(vector->allocSize <= vector->size) {
-        vector->allocSize = vector->allocSize ? vector->allocSize*2 : 2;
-        vector->items = realloc(vector->items, vector->allocSize * sizeof(void*));
-        if(vector->items == NULL) return 1;
-    }
-    vector->items[vector->size++] = item;
-    return 0;
+struct Vector *vectorAlloc() {
+    struct Vector *vector = malloc(sizeof(struct Vector));
+    if(vector == NULL) return NULL;
+    vectorCompose(vector);
+    return vector;
 }
 
-void* vectorRemoveTail(struct Vector* vector) {
+
+int vectorAddTail(struct Vector *vector, void *item) {
+    if(vector->allocSize <= vector->size) {
+        vector->allocSize = vector->allocSize ? vector->allocSize * 2 : 2;
+        void *tmp = realloc(vector->items, vector->allocSize * sizeof(void *));
+        if(tmp == NULL) return STATUS_ALLOC_ERR;
+        vector->items = tmp;
+    }
+    vector->items[vector->size++] = item;
+    return STATUS_OK;
+}
+
+void *vectorRemoveTail(struct Vector *vector) {
     if(!vector->size) return NULL;
     void* value = vector->items[--vector->size];
     //TODO: Resize down?
@@ -42,52 +52,66 @@ void* vectorRemoveTail(struct Vector* vector) {
     return value;
 }
 
-unsigned int vectorSize(const struct Vector* vector) {
+unsigned int vectorSize(const struct Vector *vector) {
     return vector->size;
 }
 
-void *vectorGet(const struct Vector* vector, unsigned int index) {
-    if(index>=vector->size) return NULL;
-    return vector->items[index];
+void *vectorGet(const struct Vector *vector, int key) {
+    if(key < 0) {
+        key = vector->size + key + 1;
+    }
+    if(key >= 0 && key < vector->size) {
+        return vector->items[key];
+    }
+    return NULL;
 }
 
-void *vectorGetTail(const struct Vector* vector) {
+void *vectorGetTail(const struct Vector *vector) {
     if(!vector->size) return NULL;
     return vector->items[vector->size-1];
 }
 
-unsigned int vectorAddStr(struct Vector* vector, char* input, void* item) {
-    // TODO: Use input as index?
-    vectorAddTail(vector, item);
-    return 1;
+int vectorAddStr(struct Vector *vector, const char *key, void *item) {
+    long index;
+    int result = longParse(key, 10, &index);
+    if(result) return result;
+    return vectorAdd(vector, index, item);
 }
 
-void *vectorGetStr(struct Vector *vector, char *input) {
-    unsigned int index = atoi(input);
-    if(index>=vector->size) return NULL;
-    return vector->items[index];
+void *vectorGetStr(struct Vector *vector, const char *input) {
+    long index;
+    int result = longParse(input, 10, &index);
+    if(result) return NULL;
+    return vectorGet(vector, index);
 }
 
 int vectorIsEmpty(const struct Vector *vector) {
     return vector->size == 0;
 }
 
-int vectorAdd(struct Vector *vector, unsigned int key, void *value) {
-    if(key < vector->size) {
+int vectorAdd(struct Vector *vector, int key, void *value) {
+    /* Adds value at key, frees value at current position. */
+    if(key < 0) {
+        key = vector->size + key + 1;
+    }
+    if(key >= 0 && key < vector->size) {
         void *temp = vectorGet(vector, key);
         if(temp && vector->freeData) {
             vector->freeData(temp);
         }
         *(vector->items + key) = value;
-        return 0;
+        return STATUS_OK;
     } else if(key == vector->size) {
         return vectorAddTail(vector, value);
     }
-    return 1;
+    return STATUS_INPUT_ERR;
 }
 
-int vectorInsert(struct Vector *vector, unsigned int key, void *value) {
-    if(key < vector->size) {
+int vectorInsert(struct Vector *vector, int key, void *value) {
+    if(key < 0) {
+        key = vector->size + key + 1;
+    }
+    if(key >= 0 && key < vector->size) {
         // Add the final element to the end of the array.
         int result = vectorAddTail(vector, vectorGetTail(vector));
         if(result) return result;
@@ -96,16 +120,19 @@ int vectorInsert(struct Vector *vector, unsigned int key, void *value) {
             vector->items[i] = vector->items[i-1];
         }
         vector->items[key] = value;
-        return 0;
+        return STATUS_OK;
     } else if(key == vector->size) {
         return vectorAddTail(vector, value);
     }
     return 1;
 }
 
-void *vectorRemove(struct Vector *vector, unsigned int key) {
+void *vectorRemove(struct Vector *vector, int key) {
     /*Remove k, shift remaining elements back.*/
-    if(key < vector->size - 1) {
+    if(key < 0) {
+        key = vector->size + key + 1;
+    }
+    if(key >= 0 && key < vector->size - 1) {
         void *temp = vectorGet(vector, key);
         for(int i = key; i < vector->size - 1; i++) {
             vector->items[i] = vector->items[i+1];
@@ -118,7 +145,7 @@ void *vectorRemove(struct Vector *vector, unsigned int key) {
     return NULL;
 }
 
-struct Iterator vectorIterator(const struct Vector* vector) {
+struct Iterator vectorIterator(const struct Vector *vector) {
     struct Iterator iterator;
     iterator.collection = (struct Vector*)vector;
     iterator.index = 0;
