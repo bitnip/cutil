@@ -9,7 +9,7 @@ char isWhitespaceChar(char character) {
     return 0;
 }
 
-char* afterWhitespace(char* s) {
+char *afterWhitespace(char *s) {
     while (isWhitespaceChar(*s)) s++;
     return s;
 }
@@ -18,7 +18,7 @@ char isDigitChar(char toCheck) {
     return toCheck >= 48 && toCheck <= 57;
 }
 
-char* afterDigits(const char* toCheck) {
+char *afterDigits(const char *toCheck) {
     while(*toCheck) {
         if(!isDigitChar(*toCheck)) break;
         toCheck++;
@@ -26,7 +26,7 @@ char* afterDigits(const char* toCheck) {
     return (char*) toCheck;
 }
 
-char* afterInteger(char *toCheck) {
+char *afterInteger(char *toCheck) {
     char *offset = toCheck;
     if(*toCheck == '-' || *toCheck == '+') {
         // Possibly number starting with sign.
@@ -46,7 +46,7 @@ char* afterInteger(char *toCheck) {
     return offset;
 }
 
-char* afterNumber(char* toCheck) {
+char *afterNumber(char *toCheck) {
     char* offset = afterInteger(toCheck);
     if(offset==toCheck) return toCheck;
     if(*offset == ',' || *offset == '.') {
@@ -84,13 +84,31 @@ char *afterQuotedString(char *toCheck) {
     return toCheck;
 }
 
-char* afterLineBreak(char* toCheck) {
+char *afterLineBreak(char *toCheck) {
     if(*toCheck == '\r') toCheck++;
     if(*toCheck == '\n') toCheck++;
     return toCheck;
 }
 
-char strCmpN(const char* toCheck, const char* toMatch, unsigned int size) {
+char strCmpToDelim(
+        const char *toCheck,
+        const char *toMatchStart,
+        const char *toMatchDelim) {
+    do {
+        if(toMatchStart >= toMatchDelim) {
+            return -*toCheck;
+        }
+        char result = *toMatchStart++ - *toCheck;
+        if(result) return result;
+    } while(*toCheck++);
+    return 0;
+}
+
+char strCmpN(const char *toCheck, const char *toMatch, unsigned int size) {
+    /*
+    Note: `toCheck` and `toMatch` cannot be NULL.
+    Note: Assumes `toCheck` and `toMatch` are null terminated.
+    */
     while(size--) {
         char result = *toMatch++ - *toCheck++;
         if(result) return result;
@@ -98,7 +116,11 @@ char strCmpN(const char* toCheck, const char* toMatch, unsigned int size) {
     return 0;
 }
 
-char strCmp(const char* toCheck, const char* toMatch) {
+char strCmp(const char *toCheck, const char *toMatch) {
+    /*
+    Note: `toCheck` and `toMatch` cannot be NULL.
+    Note: Assumes `toCheck` and `toMatch` are null terminated.
+    */
     do {
         char result = *toMatch - *toCheck++;
         if(result) return result;
@@ -106,21 +128,21 @@ char strCmp(const char* toCheck, const char* toMatch) {
     return 0;
 }
 
-int safeStrCmp(const char *a, const char* b) {
+int strCmpSafe(const char *a, const char *b) {
     if(a == b) return 0;
     else if(a == NULL) return -1;
     else if(b == NULL) return 1;
     else return strCmp(a, b);
 }
 
-char* strStartsWith(const char* toCheck, const char* toMatch) {
+char *strStartsWith(const char *toCheck, const char *toMatch) {
     while(*toMatch) {
         if(*toMatch++ != *toCheck++) return NULL;
     }
     return (char*)toCheck;
 }
 
-char* strEndsWith(const char* toCheck, const char* toMatch) {
+char *strEndsWith(const char *toCheck, const char *toMatch) {
     if(toCheck == NULL || toMatch == NULL) return 0;
     unsigned int toCheckLength = strlen(toCheck);
     unsigned int toMatchLength = strlen(toMatch);
@@ -129,10 +151,10 @@ char* strEndsWith(const char* toCheck, const char* toMatch) {
 }
 
 char tokenize(
-    char** thisToken,
-    char** nextDelimiter,
-    char** nextToken,
-    const char* delimiters) {
+    char **thisToken,
+    char **nextDelimiter,
+    char **nextToken,
+    const char *delimiters) {
     //TODO: beter doc. Maybe `Returns where the current token terminates
     /*Return true if *nextToken , move *nextDelimiter to first delimiter.
     Assumes: thisToken != NULL
@@ -176,7 +198,7 @@ unsigned int strCpyNTo(char *target, unsigned int length, const char *value) {
     return byteCount;
 }
 
-char* strCopy(const char* string) {
+char *strCopy(const char *string) {
     if (!string) return NULL;
     unsigned int length = strlen(string);
     char *newString = (char *) malloc(length + 1);
@@ -187,7 +209,7 @@ char* strCopy(const char* string) {
     return newString;
 }
 
-char* strCopyN(const char* string, unsigned int length) {
+char *strCopyN(const char *string, unsigned int length) {
     /*Returns a string of length+1 bytes, copies string until length or \0.*/
     char* result = (char *)malloc(length + 1);
     char* ptr = result;
@@ -198,7 +220,7 @@ char* strCopyN(const char* string, unsigned int length) {
     return result;
 }
 
-void stringTrimAfterLast(char* string, const char* delimiter) {
+void stringTrimAfterLast(char *string, const char *delimiter) {
     char* lastToken = NULL;
     while (*string) {
         const char* delimiterPointer = delimiter;
@@ -211,11 +233,11 @@ void stringTrimAfterLast(char* string, const char* delimiter) {
     *++lastToken = '\0';
 }
 
-char* strJoin(const char* a, const char* b) {
+char *strJoin(const char *a, const char *b) {
     unsigned int aLen = strlen(a);
     unsigned int bLen = strlen(b);
     unsigned int newStrLen = aLen + bLen;
-    char* str = (char *) malloc(newStrLen + 1);
+    char *str = (char *) malloc(newStrLen + 1);
     if (str) {
         memcpy(str, a, aLen);
         memcpy(str+aLen, b, bLen);
@@ -242,7 +264,7 @@ const char *strFindLast(const char *str, char value) {
     return NULL;
 }
 
-unsigned long long strHash(const void* string) {
+unsigned long long strHash(const void *string) {
     const int p = 31;
     const int m = 1e9+9;
     unsigned long long hash = 0;

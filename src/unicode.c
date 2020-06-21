@@ -1,6 +1,6 @@
 #include "unicode.h"
 
-ENCODING detect_encoding(unsigned char* buffer, unsigned int size) {
+ENCODING detect_encoding(unsigned char *buffer, unsigned int size) {
     if (size >= 4) {
         if (
             (buffer[0] == 0 && buffer[1] == 0 && buffer[2] == 0xFE && buffer[3] == 0xFF) ||
@@ -26,3 +26,4 @@ ENCODING detect_encoding(unsigned char* buffer, unsigned int size) {
     }
     return UTF8;
 }
+

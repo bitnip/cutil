@@ -237,6 +237,30 @@ void testStrReplace() {
     free(result);
 }
 
+void testStrCmpToDelim() {
+    char *empty = "";
+    char *asdf = "asdf";
+    char *asdfg = "asdfg";
+
+    char result = strCmpToDelim(empty, empty, empty+1);
+    assertIntegersEqual(result, 0);
+
+    result = strCmpToDelim(asdf, asdf, asdf+4);
+    assertIntegersEqual(result, 0);
+
+    result = strCmpToDelim(asdf, empty, empty+1);
+    assertIntegersEqual(result, -'a');
+
+    result = strCmpToDelim(empty, asdf, asdf+4);
+    assertIntegersEqual(result, 'a');
+
+    result = strCmpToDelim(asdfg, asdf, asdf+4);
+    assertIntegersEqual(result, -'g');
+
+    result = strCmpToDelim(asdf, asdfg, asdfg+5);
+    assertIntegersEqual(result, 'g');
+}
+
 void testStrCmp() {
     unsigned int result = strCmp("Apple", "A");
     assertIntegersEqual(result, -'p');
@@ -275,6 +299,7 @@ void stringTest() {
     multiCharacterDontMatch();
     fullMatchMustExist();
     startsWithIdenticalInputIsTrue();
+    testStrCmpToDelim();
     testStrCmp();
     testStrCopy();
 

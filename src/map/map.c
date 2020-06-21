@@ -133,16 +133,23 @@ int mapSizeUp(struct Map *map) {
 }
 
 int mapAdd(struct Map *map, const void *key, void *value) {
-    // TODO: Fix return value.
     if(!(map && map->hashKey)) return STATUS_INPUT_ERR;
-    mapSizeUp(map);
+
+    int result = mapSizeUp(map);
+    if(result) {
+        return result;
+    }
+
     struct MapPair *pair = malloc(sizeof(struct MapPair));
+    if(!pair) {
+        return STATUS_ALLOC_ERR;
+    }
     pair->hash = map->hashKey(key);
     pair->key = key;
     pair->value = value;
 
     struct MapPair *replaced;
-    int result = mapAddPair(&map->buckets, &map->size, pair, &replaced);
+    result = mapAddPair(&map->buckets, &map->size, pair, &replaced);
     if(result) {
         return result;
     }

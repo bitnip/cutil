@@ -26,9 +26,13 @@ unsigned long long strHash(const void* ptr);
 char* strCopy(const char* string);
 char* strCopyN(const char* string, unsigned int length);
 char* strJoin(const char* a, const char* b);
+char strCmpToDelim(
+        const char *toCheck,
+        const char *toMatchStart,
+        const char *toMatchDelim);
 char strCmp(const char* toCheck, const char* toMatch);
 char strCmpN(const char* toCheck, const char* toMatch, unsigned int size);
-int safeStrCmp(const char *a, const char* b);
+int strCmpSafe(const char *a, const char* b);
 char* strStartsWith(const char* toCheck, const char* toMatch);
 char* strEndsWith(const char* toCheck, const char* toMatch);
 void strTrimAfterLast(char* string, const char* delimiter);
