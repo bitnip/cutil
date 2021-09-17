@@ -153,8 +153,13 @@ struct Iterator vectorIterator(const struct Vector *vector) {
 }
 
 void* vectorNext(struct Iterator* iterator) {
-    struct Vector* vector = iterator->collection;
+    struct Vector *vector = iterator->collection;
     if(iterator->index >= vector->size) return NULL;
     void *element = vector->items[iterator->index++];
     return element;
+}
+
+void *vectorPopCurrent(struct Iterator *iterator) {
+    struct Vector *vector = iterator->collection;
+    return vectorRemove(vector, iterator->index);
 }

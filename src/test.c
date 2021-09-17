@@ -11,6 +11,7 @@ void mapTest();
 void genericTest();
 void resourceTest();
 void uriTest();
+void sortTest();
 
 int main() {
     integerTest();
@@ -21,6 +22,7 @@ int main() {
     genericTest();
     uriTest();
     resourceTest();
+    sortTest();
 
     printf("Asserts Passed: %d, Failed: %d\n",
         asserts_passed, asserts_failed);

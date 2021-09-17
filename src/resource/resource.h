@@ -12,7 +12,7 @@ extern "C"{
 struct ResourceAdapter {
     struct Map schemes;
     struct Map adapterByExt;
-    struct Map resources;
+    struct Map resources;       // Resources by URI.
 };
 int resourceAdapterCompose(struct ResourceAdapter *);
 void resourceAdapterRelease(struct ResourceAdapter *);

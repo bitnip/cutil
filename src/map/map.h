@@ -36,6 +36,7 @@ void* mapGet(struct Map* map, const void *value);
 const void* mapKey(struct Iterator *iterator);
 struct Iterator mapIterator(struct Map*);
 void* mapNext(struct Iterator*);
+void *mapRemove(struct Map *map, const void *key);
 
 #ifdef __cplusplus
 }

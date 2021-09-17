@@ -6,7 +6,7 @@ unsigned long long ptrHash(const void *ptr) {
     return key;
 }
 
-unsigned long primes[] = {2ul, 5ul, 11ul, 23ul, 47ul, 97ul, 197ul, 397ul};
+unsigned long primes[] = {2ul, 5ul, 11ul, 23ul, 47ul, 97ul, 193ul, 389ul, 769ul, 1543ul};
 
 void mapRelease(struct Map* map) {
     if(!map) return;
@@ -180,6 +180,26 @@ void *mapGet(struct Map *map, const void *key) {
     return NULL;
 }
 
+void *mapRemove(struct Map *map, const void *key) {
+    if(!vectorSize(&map->buckets)) return NULL;
+    unsigned long long hash = map->hashKey(key);
+    unsigned long bucketIndex = hash % vectorSize(&map->buckets);
+    struct Vector *bucket = vectorGet(&map->buckets, bucketIndex);
+    struct Iterator iterator = vectorIterator(bucket);
+    struct MapPair *pair;
+    while((pair = vectorNext(&iterator))) {
+        if(pair->hash == hash) {
+            iterator.index -= 1;
+            vectorPopCurrent(&iterator);
+            map->size -= 1;
+            void *value = pair->value;
+            free(pair);
+            return value;
+        }
+    }
+    return NULL;
+}
+
 struct Iterator mapIterator(struct Map *map) {
     struct Iterator iterator;
     iterator.collection = map;
@@ -206,7 +226,7 @@ const void *mapKey(struct Iterator *iterator) {
     return NULL;
 }
 
-void *mapNext(struct Iterator* iterator) {
+void *mapNext(struct Iterator *iterator) {
     struct Map *map = iterator->collection;
 
     struct Vector *bucket;

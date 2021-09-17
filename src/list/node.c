@@ -1,4 +1,6 @@
 #include "node.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 struct Node *nodeCreate(const void *data) {
     struct Node *node = (struct Node *) malloc(sizeof(struct Node));

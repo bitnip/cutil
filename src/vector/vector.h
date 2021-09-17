@@ -34,6 +34,7 @@ void vectorRelease(struct Vector *vector);
 
 struct Iterator vectorIterator(const struct Vector *vector);
 void* vectorNext(struct Iterator *iterator);
+void *vectorPopCurrent(struct Iterator *);
 
 #ifdef __cplusplus
 }
