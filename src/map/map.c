@@ -6,7 +6,7 @@ unsigned long long ptrHash(const void *ptr) {
     return key;
 }
 
-unsigned long primes[] = {2ul, 5ul, 11ul, 23ul, 47ul, 97ul, 193ul, 389ul, 769ul, 1543ul};
+unsigned long primes[] = {2ul, 5ul, 11ul, 23ul, 47ul, 97ul, 193ul, 389ul, 769ul, 1543ul, 3089ul, 6199ul};
 
 void mapRelease(struct Map* map) {
     if(!map) return;
