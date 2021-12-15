@@ -6,7 +6,7 @@ unsigned long long ptrHash(const void *ptr) {
     return key;
 }
 
-unsigned long primes[] = {2ul, 5ul, 11ul, 23ul, 47ul, 97ul, 193ul, 389ul, 769ul, 1543ul, 3089ul, 6199ul};
+unsigned long primes[] = {2ul, 5ul, 11ul, 23ul, 47ul, 97ul, 193ul, 389ul, 769ul, 1543ul, 3089ul, 6199ul, 12401ul, 24799ul, 49597ul, 99194ul};
 
 void mapRelease(struct Map* map) {
     if(!map) return;
@@ -74,7 +74,7 @@ int mapAddPair(
 }
 
 int mapSizeUp(struct Map *map) {
-    if(map->size < vectorSize(&map->buckets)) return STATUS_OK;
+    if(map->size < vectorSize(&map->buckets)*4) return STATUS_OK;
     /*Resize bucket count to satisfy >= N+1 and <= a prime near 2N+1.*/
     unsigned long* endPtr = primes + sizeof(primes) / sizeof(unsigned long);
     unsigned long* nextSizePtr = primes;
