@@ -21,4 +21,4 @@ TEST_SOURCE= \
 	src/generic/generic_test.c \
 	src/resource/resource_test.c \
 	src/resource/uri_test.c \
-	src/sort/test_sort.c
+	src/sort/sort_test.c

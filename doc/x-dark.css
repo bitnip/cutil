@@ -1,21 +1,21 @@
 p {
-  color: #C3B492;
+  color: #e5ddc9;
 }
 
 h1{
-  color: #845A7E;
+  color: #b77bae;
 }
 
 h2 {
-  color: #594E86;
+  color: #7368a1;
 }
 
 a {
-  color: #1593A2;
+  color: #2fb3c3;
 }
 
 body {
-  color: #C3B492;
+  color: #e5ddc9;
   font-family: monospace;
   font-size: 16px;
   line-height: 1.7;
@@ -36,6 +36,7 @@ table {
 th {
   padding: .2em 1em;
   color: #DE7482;
+  font-weight: normal;
 }
 td {
   padding: .2em 1em;
@@ -44,11 +45,10 @@ td {
 }
 
 .math {
-  color: #DE7482;
+  color: #f77f8f;
 }
 
-/*Set bullet color.
-  https://www.w3schools.com/howto/howto_css_bullet_color.asp*/
+/*Set bullet color.*/
 ul {
   list-style: none;
 }

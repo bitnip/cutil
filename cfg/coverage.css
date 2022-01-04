@@ -1,19 +1,26 @@
 :root {
     font-family: monospace;
+    --color1: #7368a1; /* Purple */
+    --color2: #b77bae; /* Violet */
+    --color3: #f77f8f; /* Pink */
+    --color4: #2fb3c3; /* Green */
+    --color5: #e5ddc9; /* Tan */
+
     --unknown_color: LightGray;
-    --low_color: #DE7482;
-    --medium_color: wheat;
-    --high_color: #1593A2;
-    --covered_color: #1593A280;
-    --uncovered_color: #DE7482;
+    --low_color: var(--color3);
+    --medium_color: var(--color5);
+    --high_color: var(--color4);
+    --covered_color: var(--color4);
+    --uncovered_color: var(--color3);
     --takenBranch_color: Green;
     --notTakenBranch_color: Red;
 }
 
 body
 {
-    color: wheat;
+    color: var(--color5);
     background-color: #060F1A;
+    font-weight: bolder;
 }
 
 h1
@@ -22,8 +29,7 @@ h1
     margin: 0;
     padding: 10px 0px;
     font-size: 20pt;
-    font-weight: bold;
-    color: #594E86;
+    color: var(--color1);
 }
 
 hr
@@ -36,12 +42,12 @@ hr
 /* Link formats: use maroon w/underlines */
 a:link
 {
-    color: #845A7E;
+    color: var(--color2);
     text-decoration: underline;
 }
 a:visited
 {
-    color: #845A7E;
+    color: var(--color2);
     text-decoration: underline;
 }
 
@@ -76,8 +82,7 @@ table.legend
 
 table.legend th[scope=row]
 {
-    color: #DE7482;
-    font-weight: normal;
+    color: var(--color3);
     text-align: right;
     white-space: nowrap;
 }
@@ -99,29 +104,22 @@ table.coverage td,
 table.coverage th
 {
     text-align: right;
-    font-weight: normal;
     white-space: nowrap;
     padding-left: 5px;
     padding-right: 4px;
 }
 
-table.coverage td
-{
-    /*background-color: LightSteelBlue;*/
-}
-
 table.coverage th[scope=row]
 {
-    color: #DE7482;
-    font-weight: normal;
+    color: var(--color3);
     white-space: nowrap;
 }
 
 table.coverage th[scope=col]
 {
-    color: #DE7482;
-    font-weight: normal;
+    color: var(--color3);
     white-space: nowrap;
+    padding: 0;
 }
 
 table.legend span
@@ -253,27 +251,24 @@ meter.coverage-high:-moz-meter-optimum::-moz-meter-bar
 /*** End of Meter formats ***/
 .file-list td, .file-list th {
     padding: 0.25em 0.5em;
-    font-weight: normal;
 }
 
 .file-list td {
     width: 100%;
-    border-top: 1px solid #594E86;
+    border-top: 1px solid var(--color1);
 }
 
 .file-list td:nth-child(2) {
-    border-left: 1px solid #594E86;
+    border-left: 1px solid var(--color1);
 }
 .file-list td:nth-child(4) {
-    border-right: 1px solid #594E86;
+    border-right: 1px solid var(--color1);
 }
 
 .file-list th[scope^=col]
 {
     text-align: center;
-    color: #DE7482;
-/*    background-color: SteelBlue;
-    font-size: 120%;*/
+    color: var(--color3);
     border-left-style: none;
     border-right-style: none;
 }
@@ -283,19 +278,8 @@ meter.coverage-high:-moz-meter-optimum::-moz-meter-bar
     text-align: right;
     color: black;
     font-family: monospace;
-    font-weight: normal;
     font-size: 100%;
-    border-top: 1px solid #594E86;
-}
-
-.file-list tr > td,
-.file-list tr > th {
-/*    background: #594E86;*/
-}
-
-.file-list tr:nth-child(even) > td,
-.file-list tr:nth-child(even) > th {
-/*    background: #594E86;*/
+    border-top: 1px solid var(--color1);
 }
 
 .file-list tr:hover > td,
@@ -372,26 +356,25 @@ span.uncoveredLine
     -moz-tab-size: var(--tab_size);
 }
 .nc {
-    color: #845A7E !important;
+    color: var(--color2) !important;
 }
 .kt {
-    color: #845A7E !important;
+    color: var(--color2) !important;
 }
 .nf {
-    color: #1593A2 !important;
+    color: var(--color4) !important;
 }
 .k {
-    color: #594E86 !important;
+    color: var(--color1) !important;
 }
 .o {
-    color: #1593A2 !important;
+    color: var(--color4) !important;
 }
 
 span.takenBranch,
 span.notTakenBranch
 {
     font-family: monospace;
-    font-weight: bold;
 }
 
 pre
@@ -410,7 +393,6 @@ pre
 
 .lineno
 {
-/*    background-color: #EFE383;*/
     border-right: 1px solid #BBB15F;
     text-align: right;
     unicode-bidi: embed;
@@ -428,13 +410,11 @@ pre
 {
     width: 48em;
     overflow: hidden;
-    border: 0;
     border-spacing: 0px;
     margin-left:auto;
     margin-right:auto;
-    border-collapse: collapse;
     border-radius: 10px;
-    box-shadow: 0 0 0 1px #594E86;
+    border: 1px solid var(--color1);
 }
 
 .file-source table
@@ -456,7 +436,6 @@ pre
 .file-source table th
 {
     font-family: monospace;
-    font-weight: bold;
 }
 
 .file-source table td:last-child

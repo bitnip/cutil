@@ -53,7 +53,7 @@ bin/coverage.html: $(COVERAGE_EXE)
 		--exclude=".*/*test.c" \
 		--html \
 		--html-details \
-		--html-title "${APP} Test Results" \
+		--html-title "${APP} Coverage Report" \
 		--html-css cfg/coverage.css \
 		--sort-percentage \
 		-j 4 \

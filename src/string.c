@@ -4,12 +4,12 @@ const char ASCII_H_DELIMITERS[] = " \t";
 const char ASCII_V_DELIMITERS[] = "\n\r";
 
 char isWhitespaceChar(char character) {
-    const char *delimiter = &(ASCII_H_DELIMITERS[0]);
+    const char* delimiter = &(ASCII_H_DELIMITERS[0]);
     while (*delimiter) if (character == *(delimiter++)) return 1;
     return 0;
 }
 
-char *afterWhitespace(char *s) {
+char* afterWhitespace(char* s) {
     while (isWhitespaceChar(*s)) s++;
     return s;
 }
@@ -18,7 +18,7 @@ char isDigitChar(char toCheck) {
     return toCheck >= 48 && toCheck <= 57;
 }
 
-char *afterDigits(const char *toCheck) {
+char* afterDigits(const char* toCheck) {
     while(*toCheck) {
         if(!isDigitChar(*toCheck)) break;
         toCheck++;
@@ -26,7 +26,7 @@ char *afterDigits(const char *toCheck) {
     return (char*) toCheck;
 }
 
-char *afterInteger(char *toCheck) {
+char* afterInteger(char *toCheck) {
     char *offset = toCheck;
     if(*toCheck == '-' || *toCheck == '+') {
         // Possibly number starting with sign.
