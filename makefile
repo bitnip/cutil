@@ -6,6 +6,7 @@ COVERAGE_EXE:=bin/coverage_$(APP)
 include cfg/cfg.mk
 
 CC=x86_64-w64-mingw32-gcc
+CC_COVERAGE=x86_64-pc-cygwin-gcc
 CFLAGS=-Wall -Werror -pedantic -std=c11
 CFLAGS_COVERAGE=-coverage -fprofile-arcs -ftest-coverage -O0
 CFLAGS_DEBUG=-g -ggdb
@@ -34,7 +35,7 @@ test: $(TEST_EXE)
 	./$<
 
 # Build unit test executable and link with library using coverage parameters.
-$(COVERAGE_EXE): CC=x86_64-pc-cygwin-gcc
+$(COVERAGE_EXE): CC=$(CC_COVERAGE)
 $(COVERAGE_EXE): CFLAGS_OUTPUT := -o $(COVERAGE_EXE)
 $(COVERAGE_EXE): LIBRARIES := $(LIBRARIES) -L tmp -l$(APP)
 $(COVERAGE_EXE): $(TEST_SOURCE) tmp/lib$(APP).a
@@ -52,7 +53,7 @@ bin/coverage.html: $(COVERAGE_EXE)
 		--exclude=".*/*test.c" \
 		--html \
 		--html-details \
-		--html-title "Test Results" \
+		--html-title "${APP} Test Results" \
 		--html-css cfg/coverage.css \
 		--sort-percentage \
 		-j 4 \

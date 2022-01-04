@@ -261,12 +261,21 @@ meter.coverage-high:-moz-meter-optimum::-moz-meter-bar
     border-top: 1px solid #594E86;
 }
 
+.file-list td:nth-child(2) {
+    border-left: 1px solid #594E86;
+}
+.file-list td:nth-child(4) {
+    border-right: 1px solid #594E86;
+}
+
 .file-list th[scope^=col]
 {
     text-align: center;
     color: #DE7482;
 /*    background-color: SteelBlue;
     font-size: 120%;*/
+    border-left-style: none;
+    border-right-style: none;
 }
 
 .file-list th[scope=row]
