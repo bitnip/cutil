@@ -1,9 +1,10 @@
 :root {
     font-family: monospace;
+    --background: #060F1A; /* Dark Blue */
     --color1: #7368a1; /* Purple */
     --color2: #b77bae; /* Violet */
-    --color3: #f77f8f; /* Pink */
     --color4: #2fb3c3; /* Green */
+    --color3: #f77f8f; /* Red */
     --color5: #e5ddc9; /* Tan */
 
     --unknown_color: LightGray;
@@ -19,7 +20,7 @@
 body
 {
     color: var(--color5);
-    background-color: #060F1A;
+    background-color: var(--background);
     font-weight: bolder;
 }
 
