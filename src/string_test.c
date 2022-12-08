@@ -3,97 +3,97 @@
 
 void oneCharacterInteger() {
     char input[] = "1";
-    char* offset = afterInteger(input);
+    const char* offset = strAfterInteger(input);
     assertTrue(input + 1 == offset);
 }
 
 void multiCharacterInteger() {
     char input[] = "255";
-    char* offset = afterInteger(input);
+    const char* offset = strAfterInteger(input);
     assertTrue(input + 3 == offset);
 }
 
 void positiveInteger() {
     char input[] = "+123";
-    char* offset = afterInteger(input);
+    const char* offset = strAfterInteger(input);
     assertTrue(input + 4 == offset);
 }
 
 void negativeInteger() {
     char input[] = "-456";
-    char* offset = afterInteger(input);
+    const char* offset = strAfterInteger(input);
     assertTrue(input + 4 == offset);
 }
 
 void emptyStringNotInteger() {
     char input[] = "\0";
-    char* offset = afterInteger(input);
+    const char* offset = strAfterInteger(input);
     assertTrue(input == offset);
 }
 
 void letterNotInteger() {
     char input[] = "a";
-    char* offset = afterInteger(input);
+    const char* offset = strAfterInteger(input);
     assertTrue(input == offset);
 }
 
 void mixedIntegerAndLetter() {
     char input[] = "1a";
-    char* offset = afterInteger(input);
+    const char* offset = strAfterInteger(input);
     assertTrue(input + 1 == offset);
 }
 
 void integerIsNumber() {
     char input[] = "789";
-    char *offset = afterNumber(input);
+    const char* offset = strAfterNumber(input);
     assertTrue(input + 3 == offset);
 }
 
 void decimalIsNumber() {
     char input[] = "1.0";
-    char *offset = afterNumber(input);
+    const char* offset = strAfterNumber(input);
     assertTrue(input + 3 == offset);
 }
 
 void exponantIsNumber() {
     char input[] = "1.0E10";
-    char *offset = afterNumber(input);
+    const char* offset = strAfterNumber(input);
     assertTrue(input + 6 == offset);
 }
 
 void positiveExponantIsNumber() {
     char input[] = "+1.0E+10";
-    char *offset = afterNumber(input);
+    const char* offset = strAfterNumber(input);
     assertTrue(input + 8 == offset);
 }
 
 void negativeExponantIsNumber() {
     char input[] = "-1.0E-10";
-    char *offset = afterNumber(input);
+    const char* offset = strAfterNumber(input);
     assertTrue(input + 8 == offset);
 }
 
 void emptyStringNotQuotedString() {
     char input[] = "";
-    char *offset = afterQuotedString(input);
+    char *offset = strAfterQuotedString(input);
     assertTrue(input == offset);
 }
 
 void emptyQuotesAreQuotedString() {
     char input[] = "\"\"";
-    char *offset = afterQuotedString(input);
+    char *offset = strAfterQuotedString(input);
     assertTrue(input + 2 == offset);
 }
 
 void quotedSingleCharacterIsQuotedString() {
     char input[] = "\"a\"";
-    char *offset = afterQuotedString(input);
+    char *offset = strAfterQuotedString(input);
     assertTrue(input + 3 == offset);
 }
 
 void quotedEscapedQuoteIsQuotedString() {
     char input[] = "\"\\\"\"";
-    char *offset = afterQuotedString(input);
+    char *offset = strAfterQuotedString(input);
     assertTrue(input + 4 == offset);
 }
 
@@ -154,9 +154,9 @@ void fullMatchMustExist() {
 
 void testTokenize2() {
     char input[] = "";
-    char *thisToken = &input[0];
-    char *nextDelim = NULL;
-    char *nextToken = NULL;
+    const char *thisToken = &input[0];
+    const char *nextDelim = NULL;
+    const char *nextToken = NULL;
     char count = 0;
     while (tokenize(&thisToken, &nextDelim, &nextToken,  "/")) {
         count++;
@@ -188,11 +188,11 @@ void testTokenize2() {
 }
 
 void testTokenize() {
-    char input[] = "//a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z//";
-    char *thisToken = &input[0];
-    char *nextDelim = NULL;
-    char *nextToken = NULL;
-    char *tInput = thisToken;
+    const char input[] = "//a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z//";
+    const char *thisToken = &input[0];
+    const char *nextDelim = NULL;
+    const char *nextToken = NULL;
+    const char *tInput = thisToken;
 
     char hasToken;
     // First 2 tokens are one apart.
@@ -222,18 +222,22 @@ void testTokenize() {
 
 void testStrReplace() {
     char ello[] = "ello"; 
-    char *result = strReplace(ello, 0, 0, "h");
+    char* result = strReplace(ello, 0, 0, "h");
     assertStringsEqual(result, "hello");
     free(result);
 
-    char *wonderful = "wonderful";
+    char* wonderful = "wonderful";
     result = strReplace(wonderful, 2, 4, "e");
     assertStringsEqual(result, "woeful");
     free(result);
 
-    char *empty = "";
+    char* empty = "";
     result = strReplace(empty, 0, 0, "x");
     assertStringsEqual(result, "x");
+    free(result);
+
+    result = strReplace(empty, 0, 1, "");
+    assertStringsEqual(result, "");
     free(result);
 }
 

@@ -30,6 +30,7 @@ void *listCurrent(struct Iterator *);
 void *listPopCurrent(struct Iterator *);
 void *listSwapCurrent(struct Iterator *itr, void *data);
 int listAddCurrent(struct Iterator *, void *);
+void listPrint(const struct List* list);
 
 int listContains(const struct List *, const void *);
 void listAddHead(struct List *, const void *);

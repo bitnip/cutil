@@ -11,9 +11,9 @@ int parseURI(struct URI *output, const char *input) {
     output->query = NULL;
     output->fragment = NULL;
     // TODO: Only allow valid characters...
-    char *thisToken = (char*)input;
-    char *nextDelim = NULL;
-    char *nextToken = NULL;
+    const char *thisToken = (char*)input;
+    const char *nextDelim = NULL;
+    const char *nextToken = NULL;
 
     if(!tokenize(&thisToken, &nextDelim, &nextToken, ":")) return 1;
     if(!nextToken) return 1;
@@ -21,7 +21,7 @@ int parseURI(struct URI *output, const char *input) {
 
     thisToken = nextToken;
 
-    char *path = NULL;
+    const char *path = NULL;
 
     if(*thisToken == '/' && *(thisToken+1) == '/') {
 
@@ -29,9 +29,9 @@ int parseURI(struct URI *output, const char *input) {
         if(!tokenize(&thisToken, &nextDelim, &nextToken, "/")) return 1;
         if(!tokenize(&thisToken, &nextDelim, &nextToken, "/?#")) return 1;
         // TODO: Parse out.
-        char *authorityStart = thisToken;
-        char *authoritySep = (char *)strFindFirst(authorityStart, '@');
-        char *authorityEnd = nextDelim;
+        const char* authorityStart = thisToken;
+        const char* authoritySep = (char *)strFindFirst(authorityStart, '@');
+        const char* authorityEnd = nextDelim;
         // Parse out username and password.
         if(authoritySep && authorityEnd > authoritySep) {
             char *userInfoSep = (char *)strFindFirst(authorityStart, ':');
@@ -44,8 +44,8 @@ int parseURI(struct URI *output, const char *input) {
         }
         // Parse out host and port.
         // TODO: IPV6 addresses might not work.
-        char *hostStart = authoritySep ? authoritySep+1 : authorityStart;
-        char *hostSep = (char *)strFindFirst(hostStart, ':');
+        const char* hostStart = authoritySep ? authoritySep+1 : authorityStart;
+        const char* hostSep = (char *)strFindFirst(hostStart, ':');
         if(hostSep && hostSep < authorityEnd) {
             output->host = strCopyN(hostStart, hostSep - hostStart);
             output->port = strCopyN(hostSep+1, authorityEnd - hostSep - 1);

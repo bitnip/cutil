@@ -2,23 +2,20 @@
 
 Common utility functions for C.
 
----
-
 ## Prerequisites
 
-### Build
+### Windows
 ```
-    gcc : https://gcc.gnu.org/install/
+cygwin: https://www.cygwin.com/install.html
+cygwin packages:
+  gcc-core
+  gcovr
+  gdb
+  make
+  mingw64-x86_64-gcc-core
+  mingw64-x86_64-gcc-g++
+  python3
 ```
-### Coverage
-```
-  gcovr : https://github.com/gcovr/gcovr
-```
-### Documentation
-```
- pandoc : https://pandoc.org/installing.html
-```
-
 ---
 
 ## Usage
@@ -28,15 +25,12 @@ Common utility functions for C.
 `> make build`
 
 ### Test
-
 `> make test`
 
 ### Coverage Report
-
 `> make coverage`
 
 ### Documentation
-
 `> make docs`
 
 ## Known Issues

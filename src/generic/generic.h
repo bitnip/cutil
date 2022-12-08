@@ -37,16 +37,20 @@ struct Generic {
     struct Object* object;
 };
 
+void* genericData(struct Generic* generic);
 
-void *genericData(struct Generic *generic);
-struct Generic *genericGet(struct Generic *root, const char *key);
 unsigned int genericAdd(struct Generic *root, const char *key, struct Generic *value);
+struct Generic* genericGet(struct Generic* root, const char *key);
 
-struct Generic *getAt(struct Generic *root, char *path);
-unsigned int addAt(struct Generic *root, char *path, struct Generic *value);
+struct Generic* genericGetNative(struct Generic* root, struct Object* type, void* value, const char* key);
+unsigned int genericAddNative(struct Generic* root, struct Object* type, const void* value, const char* key);
+
+struct Generic *getAt(struct Generic *root, const char *path);
+unsigned int addAt(struct Generic *root, const char *path, struct Generic *value);
 
 void genericRelease(struct Generic *element);
 struct Generic *genericCompose(struct Object* object);
+
 
 #ifdef __cplusplus
 }

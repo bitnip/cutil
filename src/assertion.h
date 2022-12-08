@@ -25,7 +25,7 @@ else { \
 
 #define assertStringsEqual(actual, expected) \
 ASSERT_MACRO( \
-    strCmpSafe((actual), (expected)), \
+    strCmp((actual), (expected)), \
     "Actual: %s Expected: %s\n", (actual), (expected) \
 );
 

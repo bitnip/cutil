@@ -6,9 +6,9 @@ COVERAGE_EXE:=bin/coverage_$(APP)
 include cfg/cfg.mk
 
 CC=x86_64-w64-mingw32-gcc
-CC_COVERAGE=x86_64-pc-cygwin-gcc
-CFLAGS=-Wall -Werror -pedantic -std=c11
-CFLAGS_COVERAGE=-coverage -fprofile-arcs -ftest-coverage -O0
+CC_COVERAGE=gcc
+CFLAGS=-Wall -Werror -pedantic -std=c11 -save-temps=obj
+CFLAGS_COVERAGE=-coverage -fprofile-arcs -ftest-coverage -g -ggdb
 CFLAGS_DEBUG=-g -ggdb
 BUILDCMD=${CC} ${CFLAGS_OUTPUT} ${CFLAGS} ${INCLUDES} $^ ${LIBRARIES} ${FRAMEWORKS}
 
@@ -20,6 +20,8 @@ all: docs coverage test
 	mkdir -p bin
 	$(BUILDCMD)
 	mv *.o tmp
+	mv *.i tmp
+	mv *.s tmp
 	ar rvs $@ tmp/*.o
 build: bin/lib$(APP).a
 
@@ -37,8 +39,8 @@ test: $(TEST_EXE)
 # Build unit test executable and link with library using coverage parameters.
 $(COVERAGE_EXE): CC=$(CC_COVERAGE)
 $(COVERAGE_EXE): CFLAGS_OUTPUT := -o $(COVERAGE_EXE)
-$(COVERAGE_EXE): LIBRARIES := $(LIBRARIES) -L tmp -l$(APP)
-$(COVERAGE_EXE): $(TEST_SOURCE) tmp/lib$(APP).a
+$(COVERAGE_EXE): LIBRARIES := $(LIBRARIES) -L bin -l$(APP)
+$(COVERAGE_EXE): $(TEST_SOURCE) bin/lib$(APP).a
 	$(BUILDCMD)
 
 # Generate coverage report.
@@ -47,7 +49,7 @@ bin/coverage.html: $(COVERAGE_EXE)
 	./$<
 	mv *.gcno tmp
 	mv *.gcda tmp
-	python3 -m gcovr \
+	gcovr \
 		--root . \
 		--object-directory tmp \
 		--exclude=".*/*test.c" \
@@ -89,4 +91,4 @@ clean:
 	rm -f *.gcno # left in project root.
 	rm -rf *.dSYM
 
-$(V).SILENT:
+#$(V).SILENT:

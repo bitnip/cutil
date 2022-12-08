@@ -12,7 +12,8 @@ struct Node *nodeCreate(const void *data) {
 
 void nodeFree (struct Node *node, void (*freeData)(void*)) {
     if(node == NULL) return;
-    if(freeData != NULL)
-    (*freeData)(node->data);
+    if(freeData != NULL) {
+        (*freeData)(node->data);
+    }
     free(node);
 }

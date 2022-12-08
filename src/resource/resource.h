@@ -12,11 +12,13 @@ extern "C"{
 struct ResourceAdapter {
     struct Map schemes;
     struct Map adapterByExt;
-    struct Map resources;       // Resources by URI.
+    struct Map resources; // Resources by URI. 
 };
-int resourceAdapterCompose(struct ResourceAdapter *);
-void resourceAdapterRelease(struct ResourceAdapter *);
+int resourceAdapterCompose(struct ResourceAdapter*);
+void resourceAdapterRelease(struct ResourceAdapter*);
 
+
+/* TODO: Future improvements.
 enum ResourceStatus {
     RES_STATUS_ERROR, // data set to error code.
     RES_STATUS_CACHE, // data points to cache uri if different than uri.
@@ -25,34 +27,33 @@ enum ResourceStatus {
     RES_STATUS_FETCH, // data is being loaded.
     RES_STATUS_START  // data is staged for loading.
 };
-
 struct Resource {
     const char *uri;
     struct Generic *data;
     enum ResourceStatus status;
-};
+};*/
 
 struct Scheme {
-    int (*load)(struct URI *uri, struct Buffer *buffer);
-    int (*save)(struct URI *uri, struct Buffer *buffer);
+    int (*load)(struct URI* uri, struct Buffer* buffer);
+    int (*save)(struct URI* uri, struct Buffer* buffer);
 };
 extern struct Scheme fileScheme;
 
 struct Adapter {
     int (*parse)(
-        struct ResourceAdapter *ra,
-        struct URI *uri,
-        struct Buffer *buffer,
-        struct Generic **data);
+        struct ResourceAdapter* ra,
+        struct URI* uri,
+        struct Buffer* buffer,
+        struct Generic** data);
     int (*unparse)(
-        struct ResourceAdapter *ra,
-        struct URI *uri,
-        struct Buffer *buffer,
-        struct Generic *data);
+        struct ResourceAdapter* ra,
+        struct URI* uri,
+        struct Buffer* buffer,
+        struct Generic* data);
 };
 
-int load(struct ResourceAdapter *ra, const char *uri, struct Generic **output);
-int save(struct ResourceAdapter *ra, const char *uri, struct Generic *input);
+int load(struct ResourceAdapter* ra, const char* uri, struct Generic** output);
+int save(struct ResourceAdapter* ra, const char* uri, struct Generic* input);
 
 #ifdef __cplusplus
 }

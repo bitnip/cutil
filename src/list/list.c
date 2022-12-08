@@ -65,14 +65,13 @@ void listAddHead(struct List* list, const void* data) {
 
 static void listAddTailNode(struct List* list, struct Node* node) {
     list->size++;
-    node->next = NULL;
-    node->prev = list->tail;
-
-    if(list->tail == NULL)
-        list->head = node;
-    else
+    if(list->tail) {
+        node->prev = list->tail;
         list->tail->next = node;
-
+    }
+    else {
+        list->head = node;
+    }
     list->tail = node;
 }
 
@@ -178,7 +177,7 @@ void listAppend(struct List* a, struct List* b) {
     b->size = 0;
 }
 
-struct Iterator listIteratorMode(struct List *list, enum ITERATION_MODE mode) {
+struct Iterator listIteratorMode(struct List* list, enum ITERATION_MODE mode) {
     struct Iterator iterator;
     iterator.mode = list ? mode : ITERATION_DONE;
     iterator.collection = list;
@@ -186,15 +185,16 @@ struct Iterator listIteratorMode(struct List *list, enum ITERATION_MODE mode) {
     return iterator;
 }
 
-struct Iterator listIterator(struct List *list) {
+struct Iterator listIterator(struct List* list) {
     return listIteratorMode(list, ITERATION_FORWARD);
 }
 
-static struct Node *listCurrentNode(struct Iterator *itr) {
+static struct Node* listCurrentNode(struct Iterator* itr) {
+    /* Current node or set current node to new default. */
     if(!itr) return NULL;
-    struct List *list = itr->collection;
+    struct List* list = itr->collection;
     if(itr->current) return itr->current;
-
+    // Default based on iteration mode.
     switch(itr->mode) {
         case ITERATION_FORWARD:
             if(list->head) {
@@ -218,13 +218,13 @@ static struct Node *listCurrentNode(struct Iterator *itr) {
     return itr->current;
 }
 
-void *listCurrent(struct Iterator *itr) {
-    struct Node *current = listCurrentNode(itr);
+void* listCurrent(struct Iterator* itr) {
+    struct Node* current = listCurrentNode(itr);
     return current ? current->data : NULL;
 }
 
 // TODO: Return integer result.
-void *listNext(struct Iterator *itr) {
+void* listNext(struct Iterator* itr) {
     if(!itr) return NULL;
     if(itr->mode == ITERATION_DONE) return NULL;
 
@@ -244,48 +244,50 @@ void *listNext(struct Iterator *itr) {
         current = listCurrentNode(itr);
     }
 
-    if(!current) {
+    itr->current = current;
+    if(current) {
+        return current->data;
+    } else {
         itr->mode = ITERATION_DONE;
         return NULL;
-    } else {
-        itr->current = current;
-        return current->data;
     }
 }
 
-void *listSwapCurrent(struct Iterator *itr, void *data) {
-    struct Node *node = listCurrentNode(itr);
+void* listSwapCurrent(struct Iterator* itr, void* data) {
+    struct Node* node = listCurrentNode(itr);
     if(!node) return NULL;
-    void *temp = node->data;
+    void* temp = node->data;
     node->data = data;
     return temp;
 }
 
-int listAddCurrent(struct Iterator *itr, void *data) {
-    struct List *list = itr->collection;
-    struct Node *current = listCurrentNode(itr);
-    struct Node *node = nodeCreate(data);
+int listAddCurrent(struct Iterator* itr, void* data) {
+    struct List* list = itr->collection;
+    struct Node* current = listCurrentNode(itr);
+    struct Node* node = nodeCreate(data);
     if(!node) return STATUS_ALLOC_ERR;
     if(current) {
         switch(itr->mode) {
             case ITERATION_FORWARD:
                 /*Place node after current*/
-                if(list->tail == current) list->tail = node; // node->next = NULL
-                else {
-                    node->next = current->next;
+                if(list->tail == current) {
+                    list->tail = node; // List head is new node.
+                } else {
+                    node->next = current->next; //node next = whatever was infront of current
+                    current->next->prev = node;
                 }
-                if(current->next) current->next->prev = node;
                 current->next = node;
                 node->prev = current;
                 list->size++;
                 break;
             case ITERATION_REVERSE:
                 /*Place node before current*/
-                if(list->head == current) list->head = node; // node->prev = NULL
-                else {
+                if(list->head == current) {
+                    list->head = node; // node->prev = NULL
+                } else {
                     node->prev = current->prev;
+                    current->prev->next = node;
                 }
-                if(current->prev) current->prev->next = node;
                 current->prev = node;
                 node->next = current;
                 list->size++;
@@ -296,43 +298,46 @@ int listAddCurrent(struct Iterator *itr, void *data) {
     } else {
         listAddTailNode(list, node);
     }
-    itr->current = node;
+    //itr->current = node;
     return STATUS_OK;
 }
 
-void *listPopCurrent(struct Iterator *itr) {
-    struct List *list = itr->collection;
-    struct Node *node = listCurrentNode(itr);
+void* listPopCurrent(struct Iterator* itr) {
+    struct List* list = itr->collection;
+    struct Node* node = listCurrentNode(itr);
     if(!node) return NULL;
 
-    itr->current = listNext(itr);
+    /*itr->current =*/listNext(itr);
 
-    if(list->head == node) list->head = node->next;
-    else node->prev->next = node->next;
+    if(list->head == node) {
+        list->head = node->next;
+    } else {
+        node->prev->next = node->next;
+    }
 
-    if(list->tail == node) list->tail = node->prev;
-    else node->next->prev = node->prev;
+    if(list->tail == node) {
+        list->tail = node->prev;
+    } else {
+        node->next->prev = node->prev;
+    }
 
-    void *data = node->data;
+    void* data = node->data;
+    node->data = NULL;
     nodeFree(node, NULL);
     list->size--;
     return data;
 }
 
-static void print(const struct Node* node, char* (*toString)(const void *)) {
-    int count = 0;
-    char *output;
+static void print(const struct Node* node, char* (*toString)(const void*)) {
+    char* output;
     const struct Node* temp = node;
     while(temp) {
         output = (*toString)(temp->data);
-        printf(" %s -->",output);
+        printf("\t %p %s %p -->\n", (void*)temp->prev, output, (void*)temp->next);
         free(output);
         temp = temp->next;
-        count++;
-        if ((count % 6) == 0)
-            printf("\n");
     }
-    printf(" NULL \n");
+    printf("\tNULL \n");
 }
 
 void listPrint(const struct List* list) {

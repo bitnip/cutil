@@ -3,6 +3,7 @@
 #include "../list/list.h"
 #include "generic.h"
 #include "../string.h"
+#include "../error.h"
 #include <stddef.h>
 
 struct Collection List = {
@@ -76,7 +77,7 @@ struct Object Integer = {
 };
 
 struct Object Float = {
-    sizeof(double),
+    sizeof(float),
     "Float",
     NULL,
     NULL,
@@ -91,8 +92,8 @@ struct Object Bool = {
     NULL
 };
 
-void* genericData(struct Generic *generic) {
-    char *ptr = (char*)generic;
+void* genericData(struct Generic* generic) {
+    char* ptr = (char*)generic;
     ptr += sizeof(struct Generic);
     return (void*)ptr;
 }
@@ -103,7 +104,7 @@ void genericRelease(struct Generic *generic) {
     free(generic);
 }
 
-struct Generic *genericCompose(struct Object* object) {
+struct Generic* genericCompose(struct Object* object) {
     unsigned int size = sizeof(struct Generic) + (object ? object->size : 0);
     struct Generic *generic = malloc(size);
 
@@ -129,7 +130,7 @@ struct Generic *genericCompose(struct Object* object) {
     return generic;
 }
 
-struct Generic *genericGet(struct Generic *root, const char *key) {
+struct Generic* genericGet(struct Generic* root, const char *key) {
     if(key == NULL || root == NULL) return NULL;
 
     struct Collection *collection = (struct Collection *)root->object;
@@ -147,15 +148,32 @@ unsigned int genericAdd(struct Generic *root, const char *key, struct Generic *v
     if(collection != &Map && collection != &List && collection != &Array) {
         return 0;
     }
-    collection->add(genericData(root), key, value);
+    collection->add(genericData(root), strCopy(key), value);
     return 1; // TODO:
 }
 
+struct Generic* genericGetNative(struct Generic* root, struct Object* type, void* value, const char* key) {
+    struct Generic* valueGeneric = genericGet(root, key);
+    if(valueGeneric) {
+        if(valueGeneric->object != type) {
+            return NULL;
+        }
+        memcpy(value, genericData(valueGeneric), type->size);
+    }
+    return valueGeneric;
+}
 
-struct Generic* getAt(struct Generic *root, char* path) {
+unsigned int genericAddNative(struct Generic* root, struct Object* type, const void* value, const char* key) {
+    struct Generic* valueGeneric = genericCompose(type);
+    *((const void**)genericData(valueGeneric)) = value;
+
+    return genericAdd(root, key, valueGeneric);
+}
+
+struct Generic* getAt(struct Generic *root, const char* path) {
     if(path == NULL || root == NULL) return NULL;
 
-    char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
+    const char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
     while(tokenize(&thisToken, &nextDelim, &nextToken, ".")) {
 
         struct Collection *collection = (struct Collection *)root->object;
@@ -163,17 +181,21 @@ struct Generic* getAt(struct Generic *root, char* path) {
             return NULL;
         }
 
-        if(nextToken) *nextDelim = 0;
-        root = collection->get(genericData(root), thisToken);
-        if(nextToken) *nextDelim = '.';
+        if(nextToken) {
+            char* key = strCopyN(thisToken, nextDelim - thisToken);
+            root = collection->get(genericData(root), key);
+            free(key);
+        } else {
+            root = collection->get(genericData(root), thisToken);
+        }
     }
     return root;
 }
 
-unsigned int addAt(struct Generic *root, char *path, struct Generic *value) {
+unsigned int addAt(struct Generic* root, const char* path, struct Generic* value) {
     if(path == NULL || root == NULL) return 0;
 
-    char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
+    const char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
     while(tokenize(&thisToken, &nextDelim, &nextToken, ".")) {
 
         struct Collection *collection = (struct Collection *)root->object;
@@ -181,13 +203,14 @@ unsigned int addAt(struct Generic *root, char *path, struct Generic *value) {
             return 0;
         }
 
+
+        char* key = strCopyN(thisToken, nextDelim - thisToken);
         if(nextToken) {
-            *nextDelim = 0;
-            root = collection->get(genericData(root), thisToken);
-            *nextDelim = '.';
+            root = collection->get(genericData(root), key);
         } else {
-            collection->add(genericData(root), thisToken, value);
+            collection->add(genericData(root), key, value);
         }
+        free(key);
     }
     return 1;
 }

@@ -16,15 +16,6 @@ void newMapHasSizeZero() {
     mapRelease(&map);
 }
 
-void newMapIsEmpty() {
-    struct Map map;
-
-    mapCompose(&map);
-    assertTrue(mapIsEmpty(&map));
-
-    mapRelease(&map);
-}
-
 void emptyMapAdd() {
     struct Map map;
     char key[] = "hello";
@@ -146,7 +137,6 @@ void iteratorMapSizeTwo() {
 void mapTest() {
     mapReleaseNull();
     newMapHasSizeZero();
-    newMapIsEmpty();
     emptyMapAdd();
     emptyMapGet();
     emptyMapAddAddGet();

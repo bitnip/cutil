@@ -7,16 +7,29 @@ struct Scheme fileScheme = {
     fileLoad,
     fileSave
 };
+/*
+int resourceCompose(struct Resource* resource) {
+    resource->uri = NULL;
+    resource->data = NULL;
+    return STATUS_OK;
+}
 
-const char *extFromPath(const char *path) {
-    const char *delim = strFindLast(path, '.');
-    return delim ? delim+1 : NULL;
+struct Resource* resourceAlloc() {
+    struct Resource* resource = malloc(sizeof(struct Resource));
+    if(resource == NULL) return NULL;
+    resourceCompose(resource);
+    return resource;
+}*/
+
+const char* extFromPath(const char* path) {
+    const char* delim = strFindLast(path, '.');
+    return delim ? delim + 1 : NULL;
 }
 
 int getSubResource(
         struct URI uri,
-        struct Generic *input,
-        struct Generic **output) {
+        struct Generic* input,
+        struct Generic** output) {
     if(uri.fragment == NULL) {
         *output = input;
         return STATUS_OK;
@@ -29,18 +42,17 @@ int getSubResource(
 }
 
 int load(
-        struct ResourceAdapter *ra,
-        const char *uri,
-        struct Generic **output) {
+        struct ResourceAdapter* ra,
+        const char* uri,
+        struct Generic** output) {
     struct URI u;
     if(parseURI(&u, uri)) return STATUS_INPUT_ERR;
 
     // Create a URI for the main resource.
-    char *fileURI = uriStrip(&u, URI_QUERY | URI_FRAGMENT);
+    char* fileURI = uriStrip(&u, URI_QUERY | URI_FRAGMENT);
 
     // Check if the resource is already loaded.
-    struct Generic *item = (struct Generic *)mapGet(
-        &ra->resources, fileURI);
+    struct Generic* item = (struct Generic*)mapGet(&ra->resources, fileURI);
     if(item) {
         uriRelease(&u);
         free(fileURI);
@@ -89,7 +101,7 @@ int load(
 
     // Track loaded resource.
     mapAdd(&ra->resources, fileURI, item);
-    free(fileURI);
+    free(fileURI); // TODO: This makes the map key ptr invalid, we don't use it after but its gross.
 
     result = getSubResource(u, item, output);
 
@@ -98,9 +110,9 @@ int load(
 }
 
 int save(
-        struct ResourceAdapter *ra,
-        const char *uri,
-        struct Generic *input) {
+        struct ResourceAdapter* ra,
+        const char* uri,
+        struct Generic* input) {
     struct URI u;
     if(parseURI(&u, uri)) return STATUS_INPUT_ERR;
     // Check if the protocol is recognized.
@@ -128,10 +140,12 @@ int resourceAdapterCompose(struct ResourceAdapter *ra) {
     ra->adapterByExt.hashKey = strHash;
     mapCompose(&ra->resources);
     ra->resources.hashKey = strHash;
-    ra->resources.freeData = (void (*)(void *))genericRelease;
-    return 0; // TODO:
+    ra->resources.freeData = (void (*)(void*))genericRelease;
+    return STATUS_OK;
 }
 
-void resourceAdapterRelease(struct ResourceAdapter *ra) {
+void resourceAdapterRelease(struct ResourceAdapter* ra) {
+    mapRelease(&ra->resources);
+    mapRelease(&ra->adapterByExt);
     mapRelease(&ra->resources);
 }

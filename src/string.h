@@ -12,45 +12,42 @@ extern const char ASCII_H_DELIMITERS[];
 extern const char ASCII_V_DELIMITERS[];
 
 /*TODO: Name these better, or change their interface.*/
-char* afterWhitespace(char* string);
-char* afterInteger(char *toCheck);
-char* afterNumber(char *toCheck);
-char* afterQuotedString(char* toCheck);
-char* afterLineBreak(char* toCheck);
-char* afterDigits(const char* toCheck);
+const char* strAfterWhitespace(const char* string);
+const char* strAfterInteger(const char* toCheck);
+const char* strAfterNumber(const char* toCheck);
+char* strAfterQuotedString(char* toCheck);
+char* strAfterLineBreak(char* toCheck);
+char* strAfterDigits(const char* toCheck);
 
-unsigned int strCpyTo(char *target, const char *value);
-unsigned int strCpyNTo(char *target, unsigned int length, const char *value);
+unsigned int strCpyTo(char* target, const char* value);
+unsigned int strCpyNTo(char* target, unsigned int length, const char* value);
 
 unsigned long long strHash(const void* ptr);
 char* strCopy(const char* string);
 char* strCopyN(const char* string, unsigned int length);
 char* strJoin(const char* a, const char* b);
 char strCmpToDelim(
-        const char *toCheck,
-        const char *toMatchStart,
-        const char *toMatchDelim);
+        const char* toCheck,
+        const char* toMatchStart,
+        const char* toMatchDelim);
 char strCmp(const char* toCheck, const char* toMatch);
 char strCmpN(const char* toCheck, const char* toMatch, unsigned int size);
-int strCmpSafe(const char *a, const char* b);
 char* strStartsWith(const char* toCheck, const char* toMatch);
 char* strEndsWith(const char* toCheck, const char* toMatch);
-void strTrimAfterLast(char* string, const char* delimiter);
-const char *strFindFirst(const char *str, char value);
-const char *strFindLast(const char* str, char value);
+const char* strFindFirst(const char* str, char value);
+const char* strFindLast(const char* str, char value);
 
 char tokenize(
-    char** thisToken,
-    char** nextDelimiter,
-    char** nextToken,
+    const char** thisToken,
+    const char** nextDelimiter,
+    const char** nextToken,
     const char* delimiters);
 
-void strReplaceChar(char *input, char toReplace, char value);
 char *strReplace(
-    char *input,
+    char* input,
     unsigned int offset,
     unsigned int toRemove,
-    const char *toInsert);
+    const char* toInsert);
 
 #ifdef __cplusplus
 }
