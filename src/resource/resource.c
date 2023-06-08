@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "../string.h"
 #include "resource.h"
 #include "file.h"
@@ -35,7 +36,7 @@ int getSubResource(
         return STATUS_OK;
     }
     if(input->object == &Map.object) {
-        *output = genericGet(input, uri.fragment); // TODO Fix cast
+        *output = genericGet(input, uri.fragment);
         return *output == NULL ? STATUS_FOUND_ERR : STATUS_OK;
     }
     return STATUS_INPUT_ERR;
@@ -74,8 +75,9 @@ int load(
         free(fileURI);
         return STATUS_FORMAT_ERR;
     }
+
     // Check if an adapter exists for this extension.
-    struct Adapter *adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
+    struct Adapter* adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
     if(!adapter) {
         uriRelease(&u);
         free(fileURI);
@@ -100,9 +102,14 @@ int load(
     }
 
     // Track loaded resource.
-    mapAdd(&ra->resources, fileURI, item);
-    free(fileURI); // TODO: This makes the map key ptr invalid, we don't use it after but its gross.
+    result = mapAdd(&ra->resources, fileURI, item);
+    if(result) {
+        uriRelease(&u);
+        free(fileURI);
+        return result;
+    }
 
+    // Get the requested file fragment.
     result = getSubResource(u, item, output);
 
     uriRelease(&u);
@@ -133,7 +140,7 @@ int save(
     return result;
 }
 
-int resourceAdapterCompose(struct ResourceAdapter *ra) {
+int resourceAdapterCompose(struct ResourceAdapter* ra) {
     mapCompose(&ra->schemes);
     ra->schemes.hashKey = strHash;
     mapCompose(&ra->adapterByExt);
@@ -141,11 +148,12 @@ int resourceAdapterCompose(struct ResourceAdapter *ra) {
     mapCompose(&ra->resources);
     ra->resources.hashKey = strHash;
     ra->resources.freeData = (void (*)(void*))genericRelease;
+    ra->resources.freeKey = free;
     return STATUS_OK;
 }
 
 void resourceAdapterRelease(struct ResourceAdapter* ra) {
     mapRelease(&ra->resources);
     mapRelease(&ra->adapterByExt);
-    mapRelease(&ra->resources);
+    mapRelease(&ra->schemes);
 }

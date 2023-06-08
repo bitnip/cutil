@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "map.h"
 #include "../error.h"
 
@@ -36,16 +37,23 @@ void mapRelease(struct Map* map) {
     // MapPair doesn't have a pointer to freeData.
     // Each List Node's MapPair needs to be free'd first.
     struct Vector* bucket;
-    struct MapPair* pair;
     struct Iterator bucketIt = vectorIterator(&map->buckets);
+    //printf("Released ");
     while((bucket = vectorNext(&bucketIt))) {
         struct Iterator pairIt = vectorIterator(bucket);
+        struct MapPair* pair = NULL;
         while((pair = vectorNext(&pairIt))) {
-            if(map->freeData) map->freeData(pair->value);
-            if(map->freeKey) map->freeKey((void*)pair->key);
+            //printf("%p,", (void*)pair);
+            if(map->freeData) {
+                map->freeData(pair->value);
+            }
+            if(map->freeKey) {
+                map->freeKey((void*)pair->key);
+            }
             free(pair);
         }
     }
+    //printf("\n");
     // The rest will be cleaned up safely by the destructors.
     vectorRelease(&map->buckets);
 }
@@ -69,7 +77,6 @@ int mapAddPair(
     unsigned long bucketIndex = pair->hash % vectorSize(buckets);
     struct Vector* bucket = vectorGet(buckets, bucketIndex);
 
-
     struct MapPair* currentPair = NULL;
     int pairIndex = 0;
     struct Iterator pairIt = vectorIterator(bucket);
@@ -92,7 +99,7 @@ int mapAddPair(
     return STATUS_OK;
 }
 
-int mapSizeUp(struct Map *map) {
+int mapSizeUp(struct Map* map) {
     if(map->size < vectorSize(&map->buckets)*4) return STATUS_OK;
     /*Resize bucket count to satisfy >= N+1 and <= a prime near 2N+1.*/
     unsigned long* endPtr = primes + sizeof(primes) / sizeof(unsigned long);
@@ -101,7 +108,7 @@ int mapSizeUp(struct Map *map) {
         nextSizePtr++;
     }
     // Build new buckets.
-    struct Vector *newBuckets = vectorAlloc();
+    struct Vector* newBuckets = vectorAlloc();
     if(newBuckets == NULL) return STATUS_ALLOC_ERR;
     newBuckets->freeData = (void (*)(void *))vectorFree;
 
@@ -113,7 +120,7 @@ int mapSizeUp(struct Map *map) {
         -- Reduces the cost of each element by as much as 8 bytes * 2N.
         -- Would increase the largest allocated block of memory by a factor of 2N*sizeof(n).
         */
-        struct Vector *newBucket = vectorAlloc();
+        struct Vector* newBucket = vectorAlloc();
         if(newBucket == NULL) {
             vectorRelease(newBuckets);
             return STATUS_ALLOC_ERR;
@@ -128,13 +135,13 @@ int mapSizeUp(struct Map *map) {
 
     // Insert pairs into new buckets.
     unsigned int newSize = 0;
-    struct Vector *bucket;
-    struct MapPair *pair;
+    struct Vector* bucket;
+    struct MapPair* pair;
     struct Iterator bucketIt = vectorIterator(&map->buckets);
     while((bucket = vectorNext(&bucketIt))) {
         struct Iterator pairIt = vectorIterator(bucket);
         while((pair = vectorNext(&pairIt))) {
-            struct MapPair *replaced; /* All elements already in a map. */
+            struct MapPair* replaced; /* All elements already in a map. */
             int result = mapAddPair(newBuckets, &newSize, pair, &replaced);
             if(result) {
                 vectorRelease(newBuckets);
@@ -147,6 +154,7 @@ int mapSizeUp(struct Map *map) {
     map->buckets = *newBuckets;
     map->size = newSize;
     // Free old buckets.
+    oldBuckets.freeData = NULL;
     vectorRelease(&oldBuckets);
     return STATUS_OK;
 }
@@ -159,7 +167,7 @@ int mapAdd(struct Map* map, const void* key, void* value) {
         return result;
     }
 
-    struct MapPair *pair = malloc(sizeof(struct MapPair));
+    struct MapPair* pair = malloc(sizeof(struct MapPair));
     if(!pair) {
         return STATUS_ALLOC_ERR;
     }
@@ -167,13 +175,13 @@ int mapAdd(struct Map* map, const void* key, void* value) {
     pair->key = key;
     pair->value = value;
 
-    struct MapPair *replaced;
+    struct MapPair* replaced;
     result = mapAddPair(&map->buckets, &map->size, pair, &replaced);
     if(result) {
         return result;
     }
     if(replaced) {
-        if(map->freeKey) map->freeKey((void *)replaced->key);
+        if(map->freeKey) map->freeKey((void*)replaced->key);
         if(map->freeData) map->freeData(replaced->value);
         free(replaced);
     }
@@ -238,11 +246,11 @@ const void* mapKey(struct Iterator* iterator) {
     unsigned int bucketIndex = iterator->index;
     unsigned long long elementIndex = (unsigned long long)iterator->current;
 
-    struct Vector* bucket;
-    while((bucket = vectorGet(&map->buckets, bucketIndex))) {
-        struct MapPair *pair = vectorGet(bucket, elementIndex);
+    struct Vector* bucket = vectorGet(&map->buckets, bucketIndex);
+    while(bucket) {
+        struct MapPair* pair = vectorGet(bucket, elementIndex);
         if(pair == NULL) {
-            bucketIndex++;
+            bucket = vectorGet(&map->buckets, ++bucketIndex);
             elementIndex = 0;
             continue;
         }
@@ -253,13 +261,13 @@ const void* mapKey(struct Iterator* iterator) {
 
 void* mapNext(struct Iterator* iterator) {
     struct Map* map = iterator->collection;
-
-    struct Vector* bucket;
-    while((bucket = vectorGet(&map->buckets, iterator->index))) {
+    struct Vector* bucket = vectorGet(&map->buckets, iterator->index);
+    while(bucket) {
         unsigned long long elementIndex = (unsigned long long)iterator->current;
         struct MapPair* pair = vectorGet(bucket, elementIndex);
         if(pair == NULL) {
-            iterator->index++;
+            iterator->index = iterator->index + 1;
+            bucket = vectorGet(&map->buckets, iterator->index);
             iterator->current = 0;
             continue;
         }

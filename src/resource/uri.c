@@ -1,7 +1,8 @@
+#include <stdlib.h>
 #include "../string.h"
 #include "uri.h"
 
-int parseURI(struct URI *output, const char *input) {
+int parseURI(struct URI* output, const char* input) {
     output->scheme = NULL;
     output->username = NULL;
     output->password = NULL;
@@ -11,9 +12,9 @@ int parseURI(struct URI *output, const char *input) {
     output->query = NULL;
     output->fragment = NULL;
     // TODO: Only allow valid characters...
-    const char *thisToken = (char*)input;
-    const char *nextDelim = NULL;
-    const char *nextToken = NULL;
+    const char* thisToken = (char*)input;
+    const char* nextDelim = NULL;
+    const char* nextToken = NULL;
 
     if(!tokenize(&thisToken, &nextDelim, &nextToken, ":")) return 1;
     if(!nextToken) return 1;
@@ -21,7 +22,7 @@ int parseURI(struct URI *output, const char *input) {
 
     thisToken = nextToken;
 
-    const char *path = NULL;
+    const char* path = NULL;
 
     if(*thisToken == '/' && *(thisToken+1) == '/') {
 
@@ -74,7 +75,7 @@ int parseURI(struct URI *output, const char *input) {
     return 0;
 }
 
-void uriRelease(struct URI *uri) {
+void uriRelease(struct URI* uri) {
     if(uri->scheme) free((void*)uri->scheme);
     if(uri->username) free((void*)uri->username);
     if(uri->password) free((void*)uri->password);
@@ -85,7 +86,7 @@ void uriRelease(struct URI *uri) {
     if(uri->fragment) free((void*)uri->fragment);
 }
 
-char *uriToStr(struct URI *uri) {
+char *uriToStr(struct URI* uri) {
     unsigned int byteCount = 0;
 
     char hasUserInfo = uri->username || uri->password;
@@ -118,9 +119,9 @@ char *uriToStr(struct URI *uri) {
         byteCount += strlen(uri->fragment);
     }
 
-    char *ptr = malloc(byteCount + 1);
+    char* ptr = malloc(byteCount + 1);
     if(ptr == NULL) return NULL;
-    char *result = ptr;
+    char* result = ptr;
 
     result[byteCount] = 0; // Terminate string.
 
@@ -156,7 +157,7 @@ char *uriToStr(struct URI *uri) {
     return ptr;
 }
 
-char *uriSwapExt(struct URI *input, const char *ext, unsigned char flags) {
+char* uriSwapExt(struct URI* input, const char* ext, unsigned char flags) {
     struct URI tmp;
     tmp.scheme = input->scheme;
     tmp.username = input->username;
@@ -169,19 +170,19 @@ char *uriSwapExt(struct URI *input, const char *ext, unsigned char flags) {
     const char *dot = strFindLast(input->path, '.');
     unsigned int sansExtLength = dot ? dot - input->path : strlen(input->path);
     int newPathLength = sansExtLength + 1 + strlen(ext);
-    char *tmpPath = malloc(newPathLength + 1);
+    char* tmpPath = malloc(newPathLength + 1);
     tmp.path = tmpPath;
     tmpPath[newPathLength] = 0;
     tmpPath += strCpyNTo(tmpPath, sansExtLength, input->path);
     tmpPath += strCpyTo(tmpPath, ".");
     tmpPath += strCpyTo(tmpPath, ext);
 
-    char *result = uriStrip(&tmp, flags);
+    char* result = uriStrip(&tmp, flags);
     free((char*)tmp.path);
     return result;
 }
 
-char *uriSwapFile(struct URI *input, const char *file, unsigned char flags) {
+char* uriSwapFile(struct URI* input, const char* file, unsigned char flags) {
     struct URI tmp;
     tmp.scheme = input->scheme;
     tmp.username = input->username;
@@ -191,10 +192,10 @@ char *uriSwapFile(struct URI *input, const char *file, unsigned char flags) {
     tmp.query = input->query;
     tmp.fragment = input->fragment;
 
-    const char *slash = strFindLast(input->path, '/');
+    const char* slash = strFindLast(input->path, '/');
     unsigned int sansFileLength = slash ? slash - input->path : strlen(input->path);
     int newPathLength = sansFileLength + 1 + strlen(file);
-    char *tmpPath = malloc(newPathLength + 1);
+    char* tmpPath = malloc(newPathLength + 1);
 
     tmp.path = tmpPath;
     tmpPath[newPathLength] = 0;
@@ -202,34 +203,34 @@ char *uriSwapFile(struct URI *input, const char *file, unsigned char flags) {
     tmpPath += strCpyTo(tmpPath, "/");
     tmpPath += strCpyTo(tmpPath, file);
 
-    char *result = uriStrip(&tmp, flags);
+    char* result = uriStrip(&tmp, flags);
     free((char*)tmp.path);
     return result;
 }
 
-char *uriGetFileName(struct URI *input) {
-    const char *start = strFindLast(input->path, '/');
+char *uriGetFileName(struct URI* input) {
+    const char* start = strFindLast(input->path, '/');
     if(start == NULL) return NULL;
     start+=1; // Move after slash character.
-    const char *end = strFindFirst(start, '.');
+    const char* end = strFindFirst(start, '.');
     return strCopyN(start, end-start);
 }
 
-char *charGetFileName(const char *input) {
+char* charGetFileName(const char* input) {
     struct URI uri;
     int result;
     if((result = parseURI(&uri, input))) {
         uriRelease(&uri);
         return NULL;
     }
-    const char *start = strFindLast(uri.path, '/');
+    const char* start = strFindLast(uri.path, '/');
     if(start == NULL) return NULL;
     start+=1; // Move after slash character.
     const char *end = strFindFirst(start, '.');
     return strCopyN(start, end-start);
 }
 
-char *uriStrip(struct URI *uri, unsigned char flags) {
+char* uriStrip(struct URI *uri, unsigned char flags) {
     struct URI tmp;
     tmp.scheme = flags & URI_SCHEME ? NULL : uri->scheme;
     tmp.username = flags & URI_USERNAME ? NULL : uri->username;

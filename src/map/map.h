@@ -4,8 +4,6 @@
 extern "C"{
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "../list/list.h"
 #include "../vector/vector.h"
 #include "../iterator.h"

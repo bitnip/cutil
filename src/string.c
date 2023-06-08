@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "string.h"
 
 const char ASCII_H_DELIMITERS[] = " \t";

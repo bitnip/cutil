@@ -1,8 +1,9 @@
+#include <stdlib.h>
 #include "vector.h"
 #include "../integer/integer.h"
 #include "../error.h"
 
-void vectorRelease(struct Vector *vector) {
+void vectorRelease(struct Vector* vector) {
     if(vector == NULL) return;
     if(vector->freeData) {
         for(int i = 0; i < vector->size; i++) {
@@ -12,12 +13,12 @@ void vectorRelease(struct Vector *vector) {
     free(vector->items);
 }
 
-void vectorFree(struct Vector *vector) {
+void vectorFree(struct Vector* vector) {
     vectorRelease(vector);
     free(vector);
 }
 
-int vectorCompose(struct Vector *vector) {
+int vectorCompose(struct Vector* vector) {
     vector->size = 0;
     vector->allocSize = 0;
     vector->freeData = NULL;
@@ -25,7 +26,7 @@ int vectorCompose(struct Vector *vector) {
     return STATUS_OK;
 }
 
-struct Vector *vectorAlloc() {
+struct Vector* vectorAlloc() {
     struct Vector *vector = malloc(sizeof(struct Vector));
     if(vector == NULL) return NULL;
     vectorCompose(vector);

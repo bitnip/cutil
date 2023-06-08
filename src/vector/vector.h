@@ -4,8 +4,6 @@
 extern "C"{
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "../iterator.h"
 
 struct Vector {

@@ -1,10 +1,10 @@
+#include <stdlib.h>
 #include "../map/map.h"
 #include "../vector/vector.h"
 #include "../list/list.h"
 #include "generic.h"
 #include "../string.h"
 #include "../error.h"
-#include <stddef.h>
 
 struct Collection List = {
     {
@@ -48,7 +48,7 @@ struct Collection Array = {
     vectorNext
 };
 
-void freePtr(void **ptr) {
+void freePtr(void** ptr) {
     free(*ptr);
 }
 
@@ -98,15 +98,18 @@ void* genericData(struct Generic* generic) {
     return (void*)ptr;
 }
 
-void genericRelease(struct Generic *generic) {
+void genericRelease(struct Generic* generic) {
     if(!generic) return;
-    if(generic->object->release) generic->object->release(genericData(generic));
+    if(generic->object->release) {
+        void* data = genericData(generic);
+        generic->object->release(data);
+    }
     free(generic);
 }
 
 struct Generic* genericCompose(struct Object* object) {
     unsigned int size = sizeof(struct Generic) + (object ? object->size : 0);
-    struct Generic *generic = malloc(size);
+    struct Generic* generic = malloc(size);
 
     if(!generic) return NULL;
 
@@ -114,7 +117,7 @@ struct Generic* genericCompose(struct Object* object) {
     if(object->setup) object->setup(genericData(generic));
 
     // TODO: Make this defined by type...
-    struct Collection *collection = (struct Collection *)object;
+    struct Collection* collection = (struct Collection *)object;
     if(collection == &List) {
         struct List* list = genericData(generic);
         list->freeData = (void (*)(void *))genericRelease;
@@ -130,10 +133,10 @@ struct Generic* genericCompose(struct Object* object) {
     return generic;
 }
 
-struct Generic* genericGet(struct Generic* root, const char *key) {
+struct Generic* genericGet(struct Generic* root, const char* key) {
     if(key == NULL || root == NULL) return NULL;
 
-    struct Collection *collection = (struct Collection *)root->object;
+    struct Collection* collection = (struct Collection*)root->object;
     if(collection != &Map && collection != &List && collection != &Array) {
         return NULL;
     }
@@ -141,15 +144,17 @@ struct Generic* genericGet(struct Generic* root, const char *key) {
     return collection->get(genericData(root), key);
 }
 
-unsigned int genericAdd(struct Generic *root, const char *key, struct Generic *value) {
-    if(root == NULL) return 0;
+unsigned int genericAdd(struct Generic* root, const char* key, struct Generic* value) {
+    if(root == NULL) return STATUS_FORMAT_ERR;
 
-    struct Collection *collection = (struct Collection *)root->object;
+    struct Collection* collection = (struct Collection*)root->object;
     if(collection != &Map && collection != &List && collection != &Array) {
-        return 0;
+        return STATUS_FORMAT_ERR;
     }
-    collection->add(genericData(root), strCopy(key), value);
-    return 1; // TODO:
+    char* newKey = strCopy(key);
+    if(!newKey) return STATUS_ALLOC_ERR;
+
+    return collection->add(genericData(root), strCopy(key), value);
 }
 
 struct Generic* genericGetNative(struct Generic* root, struct Object* type, void* value, const char* key) {
@@ -165,18 +170,17 @@ struct Generic* genericGetNative(struct Generic* root, struct Object* type, void
 
 unsigned int genericAddNative(struct Generic* root, struct Object* type, const void* value, const char* key) {
     struct Generic* valueGeneric = genericCompose(type);
-    *((const void**)genericData(valueGeneric)) = value;
-
+    memcpy(genericData(valueGeneric), value, type->size);
     return genericAdd(root, key, valueGeneric);
 }
 
-struct Generic* getAt(struct Generic *root, const char* path) {
+struct Generic* getAt(struct Generic* root, const char* path) {
     if(path == NULL || root == NULL) return NULL;
 
-    const char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
+    const char* thisToken = path,* nextDelim = NULL,* nextToken = NULL;
     while(tokenize(&thisToken, &nextDelim, &nextToken, ".")) {
 
-        struct Collection *collection = (struct Collection *)root->object;
+        struct Collection* collection = (struct Collection *)root->object;
         if(collection != &Map && collection != &List && collection != &Array) {
             return NULL;
         }
@@ -198,11 +202,10 @@ unsigned int addAt(struct Generic* root, const char* path, struct Generic* value
     const char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
     while(tokenize(&thisToken, &nextDelim, &nextToken, ".")) {
 
-        struct Collection *collection = (struct Collection *)root->object;
+        struct Collection* collection = (struct Collection*)root->object;
         if(collection != &Map && collection != &List && collection != &Array) {
             return 0;
         }
-
 
         char* key = strCopyN(thisToken, nextDelim - thisToken);
         if(nextToken) {
@@ -210,7 +213,6 @@ unsigned int addAt(struct Generic* root, const char* path, struct Generic* value
         } else {
             collection->add(genericData(root), key, value);
         }
-        free(key);
     }
     return 1;
 }

@@ -4,8 +4,6 @@
 extern "C"{
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 extern const char ASCII_H_DELIMITERS[];

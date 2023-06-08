@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include "list.h"
 #include "../error.h"
@@ -326,20 +325,4 @@ void* listPopCurrent(struct Iterator* itr) {
     nodeFree(node, NULL);
     list->size--;
     return data;
-}
-
-static void print(const struct Node* node, char* (*toString)(const void*)) {
-    char* output;
-    const struct Node* temp = node;
-    while(temp) {
-        output = (*toString)(temp->data);
-        printf("\t %p %s %p -->\n", (void*)temp->prev, output, (void*)temp->next);
-        free(output);
-        temp = temp->next;
-    }
-    printf("\tNULL \n");
-}
-
-void listPrint(const struct List* list) {
-    if(list) print(list->head, list->toString);
 }
