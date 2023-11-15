@@ -32,6 +32,3 @@ cygwin packages:
 
 ### Documentation
 `> make docs`
-
-## Known Issues
-- Unit tests do not cover alloc failures.
