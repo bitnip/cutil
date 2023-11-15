@@ -6,7 +6,7 @@ struct TestData {
     int value;
 };
 
-int testDataCompare(const void* a, const void* b) {
+int testDataCompare(const void *a, const void *b) {
     if(a == b) return 0;
     return 0;
 }
@@ -61,7 +61,7 @@ void listSizeOneRemoveFront() {
     struct TestData testData;
     listAddHead(&list, &testData);
  
-    void* data = listRemoveHead(&list);
+    void *data = listRemoveHead(&list);
     assertPointersEqual(data, &testData);
     assertTrue(listIsEmpty(&list));
     assertIntegersEqual(listSize(&list), 0);
@@ -75,7 +75,7 @@ void listSizeOneRemoveRear() {
     struct TestData testData;
     listAddTail(&list, &testData);
 
-    void* data = listRemoveTail(&list);
+    void *data = listRemoveTail(&list);
     assertPointersEqual(data, &testData);
     assertTrue(listIsEmpty(&list));
     assertIntegersEqual(listSize(&list), 0);
@@ -91,7 +91,7 @@ void listSizeTwoRemoveFront() {
     listAddTail(&list, &testData1);
     listAddTail(&list, &testData2);
 
-    void* data = listRemoveHead(&list);
+    void *data = listRemoveHead(&list);
     assertPointersEqual(data, &testData1);
     assertFalse(listIsEmpty(&list));
     assertIntegersEqual(listSize(&list), 1);
@@ -107,7 +107,7 @@ void listSizeTwoRemoveRear() {
     listAddTail(&list, &testData1);
     listAddTail(&list, &testData2);
 
-    void* data = listRemoveTail(&list);
+    void *data = listRemoveTail(&list);
     assertPointersEqual(data, &testData2);
     assertFalse(listIsEmpty(&list));
     assertIntegersEqual(listSize(&list), 1);

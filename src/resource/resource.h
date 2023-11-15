@@ -28,32 +28,32 @@ enum ResourceStatus {
     RES_STATUS_START  // data is staged for loading.
 };
 struct Resource {
-    const char *uri;
-    struct Generic *data;
+    const char* uri;
+    struct Generic* data;
     enum ResourceStatus status;
 };*/
 
 struct Scheme {
-    int (*load)(struct URI* uri, struct Buffer* buffer);
-    int (*save)(struct URI* uri, struct Buffer* buffer);
+    int (*load)(struct URI *uri, struct Buffer *buffer);
+    int (*save)(struct URI *uri, struct Buffer *buffer);
 };
 extern struct Scheme fileScheme;
 
 struct Adapter {
     int (*parse)(
-        struct ResourceAdapter* ra,
-        struct URI* uri,
-        struct Buffer* buffer,
-        struct Generic** data);
+        struct ResourceAdapter *ra,
+        struct URI *uri,
+        struct Buffer *buffer,
+        struct Generic **data);
     int (*unparse)(
-        struct ResourceAdapter* ra,
-        struct URI* uri,
-        struct Buffer* buffer,
-        struct Generic* data);
+        struct ResourceAdapter *ra,
+        struct URI *uri,
+        struct Buffer *buffer,
+        struct Generic *data);
 };
 
-int load(struct ResourceAdapter* ra, const char* uri, struct Generic** output);
-int save(struct ResourceAdapter* ra, const char* uri, struct Generic* input);
+int load(struct ResourceAdapter *ra, const char *uri, struct Generic **output);
+int save(struct ResourceAdapter *ra, const char *uri, struct Generic *input);
 
 #ifdef __cplusplus
 }

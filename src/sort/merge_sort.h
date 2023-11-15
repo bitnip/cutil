@@ -7,7 +7,7 @@ extern "C"{
 int top_down_merge_sort(
   void *array[],
   unsigned int length,
-  int (*compare)(const void *, const void *)
+  int (*compare)(const void*, const void*)
 );
 
 #ifdef __cplusplus

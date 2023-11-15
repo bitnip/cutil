@@ -26,4 +26,3 @@ ENCODING detect_encoding(unsigned char *buffer, unsigned int size) {
     }
     return UTF8;
 }
-

@@ -16,19 +16,19 @@ struct Map {
     void (*freeKey)(void*);
 };
 
-unsigned long long ptrHash(const void* ptr); // TODO: Move
+unsigned long long ptrHash(const void *ptr); // TODO: Move
 
-int mapCompose(struct Map* map);
-void mapRelease(struct Map* map);
-unsigned int mapSize(struct Map* map);
-int mapAdd(struct Map* map, const void* key, void* item);
-void* mapGet(struct Map* map, const void* key);
-void* mapGetKey(struct Map* map, const void* key);
+int mapCompose(struct Map *map);
+void mapRelease(struct Map *map);
+unsigned int mapSize(struct Map *map);
+int mapAdd(struct Map *map, const void *key, void *item);
+void *mapGet(struct Map *map, const void *key);
+void *mapGetKey(struct Map *map, const void *key);
 
-const void* mapKey(struct Iterator* iterator);
+const void *mapKey(struct Iterator *iterator);
 struct Iterator mapIterator(struct Map*);
-void* mapNext(struct Iterator*);
-void* mapRemove(struct Map* map, const void* key);
+void *mapNext(struct Iterator*);
+void *mapRemove(struct Map *map, const void *key);
 
 #ifdef __cplusplus
 }

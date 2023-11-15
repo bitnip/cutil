@@ -12,8 +12,7 @@ enum UNICODE_ENCODING {
     UNICODE_UTF8
 }
 
-ENCODING detect_encoding(unsigned char* buffer, unsigned int size);
-
+ENCODING detect_encoding(unsigned char *buffer, unsigned int size);
 
 #ifdef __cplusplus
 }

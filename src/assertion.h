@@ -4,8 +4,8 @@
 extern "C"{
 #endif
 
-#include "string.h"
 #include <stdio.h>
+#include "string.h"
 #include "math.h"
 
 extern int asserts_failed;

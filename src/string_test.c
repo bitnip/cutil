@@ -4,73 +4,73 @@
 
 void oneCharacterInteger() {
     char input[] = "1";
-    const char* offset = strAfterInteger(input);
+    const char *offset = strAfterInteger(input);
     assertTrue(input + 1 == offset);
 }
 
 void multiCharacterInteger() {
     char input[] = "255";
-    const char* offset = strAfterInteger(input);
+    const char *offset = strAfterInteger(input);
     assertTrue(input + 3 == offset);
 }
 
 void positiveInteger() {
     char input[] = "+123";
-    const char* offset = strAfterInteger(input);
+    const char *offset = strAfterInteger(input);
     assertTrue(input + 4 == offset);
 }
 
 void negativeInteger() {
     char input[] = "-456";
-    const char* offset = strAfterInteger(input);
+    const char *offset = strAfterInteger(input);
     assertTrue(input + 4 == offset);
 }
 
 void emptyStringNotInteger() {
     char input[] = "\0";
-    const char* offset = strAfterInteger(input);
+    const char *offset = strAfterInteger(input);
     assertTrue(input == offset);
 }
 
 void letterNotInteger() {
     char input[] = "a";
-    const char* offset = strAfterInteger(input);
+    const char *offset = strAfterInteger(input);
     assertTrue(input == offset);
 }
 
 void mixedIntegerAndLetter() {
     char input[] = "1a";
-    const char* offset = strAfterInteger(input);
+    const char *offset = strAfterInteger(input);
     assertTrue(input + 1 == offset);
 }
 
 void integerIsNumber() {
     char input[] = "789";
-    const char* offset = strAfterNumber(input);
+    const char *offset = strAfterNumber(input);
     assertTrue(input + 3 == offset);
 }
 
 void decimalIsNumber() {
     char input[] = "1.0";
-    const char* offset = strAfterNumber(input);
+    const char *offset = strAfterNumber(input);
     assertTrue(input + 3 == offset);
 }
 
 void exponantIsNumber() {
     char input[] = "1.0E10";
-    const char* offset = strAfterNumber(input);
+    const char *offset = strAfterNumber(input);
     assertTrue(input + 6 == offset);
 }
 
 void positiveExponantIsNumber() {
     char input[] = "+1.0E+10";
-    const char* offset = strAfterNumber(input);
+    const char *offset = strAfterNumber(input);
     assertTrue(input + 8 == offset);
 }
 
 void negativeExponantIsNumber() {
     char input[] = "-1.0E-10";
-    const char* offset = strAfterNumber(input);
+    const char *offset = strAfterNumber(input);
     assertTrue(input + 8 == offset);
 }
 
@@ -119,37 +119,37 @@ void cmpDifferentLengthStrings() {
 }
 
 void multiCharacterMatch() {
-    char* result = strStartsWith("start", "st");
+    char *result = strStartsWith("start", "st");
     assertNotNull(result);
 }
 
 void singleCharacterMatch() {
-    char* result = strStartsWith("start", "s");
+    char *result = strStartsWith("start", "s");
     assertNotNull(result);
 }
 
 void startsWithIdenticalInputIsTrue() {
-    char* result = strStartsWith("asdf", "asdf");
+    char *result = strStartsWith("asdf", "asdf");
     assertNotNull(result);
 }
 
 void emptyStringsMatch() {
-    char* result = strStartsWith("", "");
+    char *result = strStartsWith("", "");
     assertNotNull(result);
 }
 
 void emptyStringDoesntStartWithCharacter() {
-    char* result = strStartsWith("", "a");
+    char *result = strStartsWith("", "a");
     assertIsNull(result);
 }
 
 void multiCharacterDontMatch() {
-    char* result = strStartsWith("asdf", "ab");
+    char *result = strStartsWith("asdf", "ab");
     assertIsNull(result);
 }
 
 void fullMatchMustExist() {
-    char* result = strStartsWith("as", "asdf");
+    char *result = strStartsWith("as", "asdf");
     assertIsNull(result);
 }
 
@@ -223,16 +223,16 @@ void testTokenize() {
 
 void testStrReplace() {
     char ello[] = "ello"; 
-    char* result = strReplace(ello, 0, 0, "h");
+    char *result = strReplace(ello, 0, 0, "h");
     assertStringsEqual(result, "hello");
     free(result);
 
-    char* wonderful = "wonderful";
+    char *wonderful = "wonderful";
     result = strReplace(wonderful, 2, 4, "e");
     assertStringsEqual(result, "woeful");
     free(result);
 
-    char* empty = "";
+    char *empty = "";
     result = strReplace(empty, 0, 0, "x");
     assertStringsEqual(result, "x");
     free(result);

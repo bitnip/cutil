@@ -1,19 +1,20 @@
 #include <stdlib.h>
 #include "uri.h"
 #include "../assertion.h"
+#include "../error.h"
 
 void testParseInvalidUri() {
     char input[] = "dragon.mtl";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 1);
+    assertIntegersEqual(result, STATUS_PARSE_ERR);
 }
 
 void testParseFileScheme() {
     char input[] = "file:///path/to/file.ext";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     assertStringsEqual(uri.scheme, "file");
     assertStringsEqual(uri.host, "");
@@ -24,7 +25,7 @@ void testParseFileScheme2() {
     char input[] = "file:///config.json";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     assertStringsEqual(uri.scheme, "file");
     assertStringsEqual(uri.host, "");
@@ -35,7 +36,7 @@ void testParseFileScheme3() {
     char input[] = "file:/config.json";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     assertStringsEqual(uri.scheme, "file");
     assertPointersEqual(uri.host, NULL);
@@ -46,7 +47,7 @@ void testParseURI() {
     char input[] = "https://john.doe@www.example.com:123/forum/questions/?tag=networking&order=newest#top";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     assertStringsEqual(uri.scheme, "https");
     assertStringsEqual(uri.username, "john.doe");
@@ -64,7 +65,7 @@ void testUriToStr() {
     char *expected = input;
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     char *actual = uriToStr(&uri);
     assertStringsEqual(actual, expected);
@@ -76,7 +77,7 @@ void testUriSwapExt() {
     struct URI uri;
     int result = parseURI(&uri, input);
 
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     char *actual = uriSwapExt(&uri, "txt", 0);
     assertStringsEqual(actual, expected);
@@ -89,7 +90,7 @@ void testUriSwapFile() {
     struct URI uri;
     int result = parseURI(&uri, input);
 
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     char *actual = uriSwapFile(&uri, "dragon.mtl", 0);
     assertStringsEqual(actual, expected);
@@ -102,7 +103,7 @@ void testUriSwapFile2() {
     struct URI uri;
     int result = parseURI(&uri, input);
 
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     char *actual = uriSwapFile(&uri, "dragon.mtl", 0);
     assertStringsEqual(actual, expected);
@@ -113,7 +114,7 @@ void testParseURINoQueryWithFragment() {
     char input[] = "file:/data/city/concrete_barrier.obj#Barrier";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
     assertStringsEqual(uri.scheme, "file");
     assertIsNull(uri.host);
     assertStringsEqual(uri.path, "/data/city/concrete_barrier.obj");
@@ -127,7 +128,7 @@ void testParseURINoQueryWithFragment2() {
     char input[] = "file:/data/vending_machine/vending_machine.obj#";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
     assertStringsEqual(uri.scheme, "file");
     assertIsNull(uri.host);
     assertStringsEqual(uri.path, "/data/vending_machine/vending_machine.obj");
@@ -141,7 +142,7 @@ void testURIStrip() {
     char input[] = "file://user:pass@host:port/a/path/?query1=value1&query2=value2#fragment";
     struct URI uri;
     int result = parseURI(&uri, input);
-    assertIntegersEqual(result, 0);
+    assertIntegersEqual(result, STATUS_OK);
 
     // Test strippng the scheme.
     char *output = uriStrip(&uri, URI_SCHEME);

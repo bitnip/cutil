@@ -8,29 +8,16 @@ struct Scheme fileScheme = {
     fileLoad,
     fileSave
 };
-/*
-int resourceCompose(struct Resource* resource) {
-    resource->uri = NULL;
-    resource->data = NULL;
-    return STATUS_OK;
-}
 
-struct Resource* resourceAlloc() {
-    struct Resource* resource = malloc(sizeof(struct Resource));
-    if(resource == NULL) return NULL;
-    resourceCompose(resource);
-    return resource;
-}*/
-
-const char* extFromPath(const char* path) {
-    const char* delim = strFindLast(path, '.');
+const char *extFromPath(const char *path) {
+    const char *delim = strFindLast(path, '.');
     return delim ? delim + 1 : NULL;
 }
 
 int getSubResource(
         struct URI uri,
-        struct Generic* input,
-        struct Generic** output) {
+        struct Generic *input,
+        struct Generic **output) {
     if(uri.fragment == NULL) {
         *output = input;
         return STATUS_OK;
@@ -43,17 +30,17 @@ int getSubResource(
 }
 
 int load(
-        struct ResourceAdapter* ra,
-        const char* uri,
-        struct Generic** output) {
+        struct ResourceAdapter *ra,
+        const char *uri,
+        struct Generic **output) {
     struct URI u;
     if(parseURI(&u, uri)) return STATUS_INPUT_ERR;
 
     // Create a URI for the main resource.
-    char* fileURI = uriStrip(&u, URI_QUERY | URI_FRAGMENT);
+    char *fileURI = uriStrip(&u, URI_QUERY | URI_FRAGMENT);
 
     // Check if the resource is already loaded.
-    struct Generic* item = (struct Generic*)mapGet(&ra->resources, fileURI);
+    struct Generic *item = (struct Generic*)mapGet(&ra->resources, fileURI);
     if(item) {
         uriRelease(&u);
         free(fileURI);
@@ -61,7 +48,7 @@ int load(
     }
 
     // Check if the protocol is recognized.
-    struct Scheme* scheme = (struct Scheme*)mapGet(&ra->schemes, u.scheme);
+    struct Scheme *scheme = (struct Scheme*)mapGet(&ra->schemes, u.scheme);
     if(!scheme) {
         uriRelease(&u);
         free(fileURI);
@@ -69,7 +56,7 @@ int load(
     }
 
     // Check if a file extension exists.
-    const char* ext = extFromPath(u.path);
+    const char *ext = extFromPath(u.path);
     if(!ext) {
         uriRelease(&u);
         free(fileURI);
@@ -77,7 +64,7 @@ int load(
     }
 
     // Check if an adapter exists for this extension.
-    struct Adapter* adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
+    struct Adapter *adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
     if(!adapter) {
         uriRelease(&u);
         free(fileURI);
@@ -117,22 +104,21 @@ int load(
 }
 
 int save(
-        struct ResourceAdapter* ra,
-        const char* uri,
-        struct Generic* input) {
+        struct ResourceAdapter *ra,
+        const char *uri,
+        struct Generic *input) {
     struct URI u;
     if(parseURI(&u, uri)) return STATUS_INPUT_ERR;
     // Check if the protocol is recognized.
-    struct Scheme* scheme = (struct Scheme*)mapGet(&ra->schemes, u.scheme);
+    struct Scheme *scheme = (struct Scheme*)mapGet(&ra->schemes, u.scheme);
     if(!scheme) return STATUS_SCHEME_ERR;
     // Check if the format is recognized.
-    const char* ext = extFromPath(u.path);
+    const char *ext = extFromPath(u.path);
     struct Adapter* adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
     if(!adapter) return STATUS_FORMAT_ERR;
 
     struct Buffer buffer;
     int result = adapter->unparse(ra, &u, &buffer, input);
-    //printf("UNPARSE %d\n", result);
     if(result) return result;
 
     result = scheme->save(&u, &buffer);
@@ -140,7 +126,7 @@ int save(
     return result;
 }
 
-int resourceAdapterCompose(struct ResourceAdapter* ra) {
+int resourceAdapterCompose(struct ResourceAdapter *ra) {
     mapCompose(&ra->schemes);
     ra->schemes.hashKey = strHash;
     mapCompose(&ra->adapterByExt);
@@ -152,7 +138,7 @@ int resourceAdapterCompose(struct ResourceAdapter* ra) {
     return STATUS_OK;
 }
 
-void resourceAdapterRelease(struct ResourceAdapter* ra) {
+void resourceAdapterRelease(struct ResourceAdapter *ra) {
     mapRelease(&ra->resources);
     mapRelease(&ra->adapterByExt);
     mapRelease(&ra->schemes);

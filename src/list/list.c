@@ -2,23 +2,23 @@
 #include "list.h"
 #include "../error.h"
 
-void listRelease(struct List* list) {
+void listRelease(struct List *list) {
     if(list == NULL) return;
     while(list->head != NULL) {
-        struct Node* temp = list->head;
+        struct Node *temp = list->head;
         list->head = list->head->next;
         nodeFree(temp, list->freeData);
         list->size--;
     }
 }
 
-void listFree(struct List* list) {
+void listFree(struct List *list) {
     if(list == NULL) return;
     listRelease(list);
     free(list);
 }
 
-int listCompose(struct List* list) {
+int listCompose(struct List *list) {
     list->size = 0;
     list->head = NULL;
     list->tail = NULL;
@@ -28,23 +28,15 @@ int listCompose(struct List* list) {
     return STATUS_OK;
 }
 
-int listSize(const struct List* list) {
+int listSize(const struct List *list) {
     return list->size;
 }
 
-int listIsEmpty(const struct List* list) {
+int listIsEmpty(const struct List *list) {
     return list->size == 0;
 }
 
-void* listHead(struct List* list) {
-    return list->head ? list->head->data : NULL;
-}
-
-void* listTail(struct List* list) {
-    return list->tail ? list->tail->data : NULL;
-}
-
-void listAddHead(struct List* list, const void* data) {
+void listAddHead(struct List *list, const void *data) {
     if(list == NULL || data == NULL) return;
 
     struct Node* node;
@@ -62,7 +54,7 @@ void listAddHead(struct List* list, const void* data) {
     list->head = node;
 }
 
-static void listAddTailNode(struct List* list, struct Node* node) {
+static void listAddTailNode(struct List *list, struct Node *node) {
     list->size++;
     if(list->tail) {
         node->prev = list->tail;
@@ -74,22 +66,22 @@ static void listAddTailNode(struct List* list, struct Node* node) {
     list->tail = node;
 }
 
-int listAddTail(struct List* list, const void* data) {
+int listAddTail(struct List *list, const void *data) {
     if(list == NULL || data == NULL) return 1;
 
-    struct Node* node = nodeCreate(data);
+    struct Node *node = nodeCreate(data);
     if(!node) return STATUS_ALLOC_ERR;
 
     listAddTailNode(list, node);
     return STATUS_OK;
 }
 
-void* listRemoveHead(struct List* list) {
+void *listRemoveHead(struct List *list) {
     if(list == NULL || list->head == NULL) return NULL;
 
     list->size--;
-    struct Node* node = list->head;
-    void* data = node->data;
+    struct Node *node = list->head;
+    void *data = node->data;
     node->data = NULL;
 
     list->head = list->head->next;
@@ -104,12 +96,12 @@ void* listRemoveHead(struct List* list) {
     return data;
 }
 
-void* listRemoveTail(struct List* list) {
+void *listRemoveTail(struct List *list) {
     if(list == NULL || list->tail == NULL) return NULL;
 
     list->size--;
-    struct Node* node = list->tail;
-    void* data = node->data;
+    struct Node *node = list->tail;
+    void *data = node->data;
     node->data = NULL;
 
     list->tail = list->tail->prev;
@@ -124,10 +116,10 @@ void* listRemoveTail(struct List* list) {
     return data;
 }
 
-int listContains(const struct List* list, const void* data) {
+int listContains(const struct List *list, const void *data) {
     if(list == NULL || data == NULL) return 0;
 
-    struct Node* curr = list->head;
+    struct Node *curr = list->head;
     while(curr != NULL) {
         if(list->compare( curr->data, data ) == 0 ) {
             return 1;
@@ -137,10 +129,10 @@ int listContains(const struct List* list, const void* data) {
     return 0;
 }
 
-static struct Node* reverse(struct Node* oldHead) {
-    struct Node* newHead = NULL;
+static struct Node *reverse(struct Node *oldHead) {
+    struct Node *newHead = NULL;
     while(oldHead != NULL) {
-        struct Node* current = oldHead;
+        struct Node *current = oldHead;
         oldHead = oldHead->next;
 
         if(oldHead != NULL)
@@ -153,13 +145,13 @@ static struct Node* reverse(struct Node* oldHead) {
     return newHead;
 }
 
-void listReverse(struct List* list) {
+void listReverse(struct List *list) {
     if(list == NULL) return;
     list->tail = list->head;
     list->head = reverse(list->head);
 }
 
-void listAppend(struct List* a, struct List* b) {
+void listAppend(struct List *a, struct List *b) {
     if(a == NULL || b == NULL) return;
     if(a->tail) {
         a->tail->next = b->head;
@@ -176,7 +168,7 @@ void listAppend(struct List* a, struct List* b) {
     b->size = 0;
 }
 
-struct Iterator listIteratorMode(struct List* list, enum ITERATION_MODE mode) {
+struct Iterator listIteratorMode(struct List *list, enum ITERATION_MODE mode) {
     struct Iterator iterator;
     iterator.mode = list ? mode : ITERATION_DONE;
     iterator.collection = list;
@@ -184,11 +176,11 @@ struct Iterator listIteratorMode(struct List* list, enum ITERATION_MODE mode) {
     return iterator;
 }
 
-struct Iterator listIterator(struct List* list) {
+struct Iterator listIterator(struct List *list) {
     return listIteratorMode(list, ITERATION_FORWARD);
 }
 
-static struct Node* listCurrentNode(struct Iterator* itr) {
+static struct Node *listCurrentNode(struct Iterator *itr) {
     /* Current node or set current node to new default. */
     if(!itr) return NULL;
     struct List* list = itr->collection;
@@ -217,13 +209,12 @@ static struct Node* listCurrentNode(struct Iterator* itr) {
     return itr->current;
 }
 
-void* listCurrent(struct Iterator* itr) {
-    struct Node* current = listCurrentNode(itr);
+void *listCurrent(struct Iterator *itr) {
+    struct Node *current = listCurrentNode(itr);
     return current ? current->data : NULL;
 }
 
-// TODO: Return integer result.
-void* listNext(struct Iterator* itr) {
+void *listNext(struct Iterator *itr) {
     if(!itr) return NULL;
     if(itr->mode == ITERATION_DONE) return NULL;
 
@@ -252,27 +243,27 @@ void* listNext(struct Iterator* itr) {
     }
 }
 
-void* listSwapCurrent(struct Iterator* itr, void* data) {
-    struct Node* node = listCurrentNode(itr);
+void *listSwapCurrent(struct Iterator *itr, void *data) {
+    struct Node *node = listCurrentNode(itr);
     if(!node) return NULL;
-    void* temp = node->data;
+    void *temp = node->data;
     node->data = data;
     return temp;
 }
 
-int listAddCurrent(struct Iterator* itr, void* data) {
-    struct List* list = itr->collection;
-    struct Node* current = listCurrentNode(itr);
-    struct Node* node = nodeCreate(data);
+int listAddCurrent(struct Iterator *itr, void *data) {
+    struct List *list = itr->collection;
+    struct Node *current = listCurrentNode(itr);
+    struct Node *node = nodeCreate(data);
     if(!node) return STATUS_ALLOC_ERR;
     if(current) {
         switch(itr->mode) {
             case ITERATION_FORWARD:
                 /*Place node after current*/
                 if(list->tail == current) {
-                    list->tail = node; // List head is new node.
+                    list->tail = node;
                 } else {
-                    node->next = current->next; //node next = whatever was infront of current
+                    node->next = current->next;
                     current->next->prev = node;
                 }
                 current->next = node;
@@ -282,7 +273,7 @@ int listAddCurrent(struct Iterator* itr, void* data) {
             case ITERATION_REVERSE:
                 /*Place node before current*/
                 if(list->head == current) {
-                    list->head = node; // node->prev = NULL
+                    list->head = node;
                 } else {
                     node->prev = current->prev;
                     current->prev->next = node;
@@ -297,16 +288,15 @@ int listAddCurrent(struct Iterator* itr, void* data) {
     } else {
         listAddTailNode(list, node);
     }
-    //itr->current = node;
     return STATUS_OK;
 }
 
-void* listPopCurrent(struct Iterator* itr) {
-    struct List* list = itr->collection;
-    struct Node* node = listCurrentNode(itr);
+void *listPopCurrent(struct Iterator *itr) {
+    struct List *list = itr->collection;
+    struct Node *node = listCurrentNode(itr);
     if(!node) return NULL;
 
-    /*itr->current =*/listNext(itr);
+    listNext(itr);
 
     if(list->head == node) {
         list->head = node->next;
@@ -320,7 +310,7 @@ void* listPopCurrent(struct Iterator* itr) {
         node->next->prev = node->prev;
     }
 
-    void* data = node->data;
+    void *data = node->data;
     node->data = NULL;
     nodeFree(node, NULL);
     list->size--;

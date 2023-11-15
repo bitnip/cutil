@@ -3,6 +3,7 @@
 #include "../list/list.h"
 #include "generic.h"
 #include "../assertion.h"
+#include "../error.h"
 
 void addMapToMapTest() {
     struct Generic *base = genericCompose(&Map.object);
@@ -16,7 +17,7 @@ void addMapToMapTest() {
     unsigned int result;
     for (unsigned int i = 0; i < 5; i++) {
         result = addAt(base, paths[i], genericCompose(&Map.object));
-        assertIntegersEqual(result, 1);
+        assertIntegersEqual(result, STATUS_OK);
     }
     assertIntegersEqual(((struct Map*)genericData(base))->size, 3);
     genericRelease(base);
@@ -28,13 +29,13 @@ void addVectorToVectorTest() {
         "0",
         "0.0",
         "1",
-        "1.1",
+        "1.0",
         "2"
     };
     unsigned int result;
     for (unsigned int i = 0; i < 5; i++) {
         result = addAt(base, paths[i], genericCompose(&Array.object));
-        assertIntegersEqual(result, 1);
+        assertIntegersEqual(result, STATUS_OK);
     }
     // TODO: add collection size function.
     assertIntegersEqual(((struct Map*)genericData(base))->size, 3);
@@ -47,13 +48,13 @@ void genericGetAtTest() {
         "a",
         "a.0",
         "b",
-        "b.1",
+        "b.0",
         "c"
     };
     unsigned int result;
     for (unsigned int i = 0; i < 5; i++) {
         result = addAt(base, paths[i], genericCompose(i&1 ? &Array.object : &Map.object));
-        assertIntegersEqual(result, 1);
+        assertIntegersEqual(result, STATUS_OK);
     }
 
     struct Generic *value = getAt(base, "");

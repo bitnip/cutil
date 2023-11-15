@@ -8,7 +8,6 @@ enum ITERATION_MODE {
 };
 
 struct Iterator {
-    /*TODO: ideally const, so const lists can be walked. However, poping current on a list is nice...*/
     enum ITERATION_MODE mode;
     void *collection;
     void *current;

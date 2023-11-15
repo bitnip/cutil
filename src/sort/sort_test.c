@@ -3,19 +3,19 @@
 #include "../assertion.h"
 
 int compare_int(const void *a_ptr, const void *b_ptr) {
-    int a = *(int *)a_ptr;
-    int b = *(int *)b_ptr;
+    int a = *(int*)a_ptr;
+    int b = *(int*)b_ptr;
     return a - b;
 }
 
 void testEmptyArray(
-  int (*sortFn)(void *array[], unsigned int length, int (*compare)(const void *, const void *))
+  int (*sortFn)(void *array[], unsigned int length, int (*compare)(const void*, const void*))
 ) {
     sortFn(0, 0, compare_int);
 }
 
 void testOneElement(
-  int (*sortFn)(void *array[], unsigned int length, int (*compare)(const void *, const void *))
+  int (*sortFn)(void* array[], unsigned int length, int (*compare)(const void*, const void*))
 ) {
     int valueArray[1] = {5};
     void *ptrArray[sizeof(valueArray) / sizeof(valueArray[0])];
@@ -27,7 +27,7 @@ void testOneElement(
 }
 
 void testTwoElements(
-  int (*sortFn)(void *array[], unsigned int length, int (*compare)(const void *, const void *))
+  int (*sortFn)(void* array[], unsigned int length, int (*compare)(const void*, const void*))
 ) {
     int valueArray[2] = {5, 4};
     void *ptrArray[sizeof(valueArray) / sizeof(valueArray[0])];
@@ -40,7 +40,7 @@ void testTwoElements(
 }
 
 void testThreeElements(
-  int (*sortFn)(void *array[], unsigned int length, int (*compare)(const void *, const void *))
+  int (*sortFn)(void *array[], unsigned int length, int (*compare)(const void*, const void*))
 ) {
     int valueArray[3] = {5, 4, 6};
     void *ptrArray[sizeof(valueArray) / sizeof(valueArray[0])];
@@ -55,13 +55,11 @@ void testThreeElements(
 }
 
 void sortTest() {
-    printf("Quick Sort\n");
     testEmptyArray(lomuto_qsort_ptr_arr);
     testOneElement(lomuto_qsort_ptr_arr);
     testTwoElements(lomuto_qsort_ptr_arr);
     testThreeElements(lomuto_qsort_ptr_arr);
 
-    printf("Merge Sort\n");
     testEmptyArray(top_down_merge_sort);
     testOneElement(top_down_merge_sort);
     testTwoElements(top_down_merge_sort);

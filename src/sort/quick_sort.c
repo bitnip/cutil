@@ -2,7 +2,7 @@ int lomuto_qsort_ptr_arr_partition(
   void *array[],
   int start,
   int end,
-  int (*compare)(const void *, const void *)
+  int (*compare)(const void*, const void*)
 ) {
     void *pivot = array[end];
     int i = start;
@@ -23,7 +23,7 @@ int lomuto_qsort_ptr_arr_partition(
 int lomuto_qsort_ptr_arr(
   void *array[],
   unsigned int length,
-  int (*compare)(const void *, const void *)
+  int (*compare)(const void*, const void*)
 ) {
     // https://en.wikipedia.org/wiki/Quicksort#Lomuto_partition_scheme
     if(length <= 0) return 0;

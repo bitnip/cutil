@@ -2,10 +2,10 @@
 #include <stdlib.h>
 
 struct Node *nodeCreate(const void *data) {
-    struct Node *node = (struct Node *) malloc(sizeof(struct Node));
+    struct Node *node = (struct Node*)malloc(sizeof(struct Node));
     node->next = NULL;
     node->prev = NULL;
-    node->data = (void *)data;
+    node->data = (void*)data;
     return node;
 }
 

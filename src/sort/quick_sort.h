@@ -7,7 +7,7 @@ extern "C"{
 int lomuto_qsort_ptr_arr(
   void *array[],
   unsigned int length,
-  int (*compare)(const void *, const void *)
+  int (*compare)(const void*, const void*)
 );
 
 #ifdef __cplusplus

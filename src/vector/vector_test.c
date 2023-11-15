@@ -47,7 +47,7 @@ void emptyVectorAddGet() {
     char value[] = "hello";
     vectorCompose(&vector);
     vectorAddTail(&vector, value);
-    char* result = vectorGet(&vector, 0);
+    char *result = vectorGet(&vector, 0);
     assertPointersEqual(result, value);
     vectorRelease(&vector);
 }

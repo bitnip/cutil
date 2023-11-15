@@ -1,11 +1,12 @@
 #include <stdlib.h>
+#include "../error.h"
 
 void top_down_merge_sort_split_merge(
   void *a[],
   void *b[],
   int start,
   int end,
-  int (*compare)(const void *, const void *)
+  int (*compare)(const void*, const void*)
 ) {
   // Note: Start is inclusive, end is exclusive.
   // Base Case: The list contains 1 card and is thus already sorted.
@@ -35,16 +36,16 @@ void top_down_merge_sort_split_merge(
 int top_down_merge_sort(
   void *array[],
   unsigned int length,
-  int (*compare)(const void *, const void *)
+  int (*compare)(const void*, const void*)
 ) {
   // https://en.wikipedia.org/wiki/Merge_sort#Top-down_implementation
   // Copy array into a work array.
-  void **workArray = malloc(sizeof(void *) * length);
-  if (workArray == NULL) return 1;
+  void **workArray = malloc(sizeof(void*) * length);
+  if (workArray == NULL) return STATUS_ALLOC_ERR;
   for (int i = 0; i < length; i++) {
     workArray[i] = array[i];
   }
 
   top_down_merge_sort_split_merge(array, workArray, 0, length, compare);
-  return 0;
+  return STATUS_OK;
 }

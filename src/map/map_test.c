@@ -21,7 +21,7 @@ void emptyMapAdd() {
     char key[] = "hello";
     char value[] = "world";
     mapCompose(&map);
-    map.hashKey = (long long unsigned int (*)(const void *))strHash;
+    map.hashKey = (long long unsigned int (*)(const void*))strHash;
     mapAdd(&map, key, value);
     assertIntegersEqual(mapSize(&map), 1);
     mapRelease(&map);
@@ -31,8 +31,8 @@ void emptyMapGet() {
     struct Map map;
     char key[] = "hello";
     mapCompose(&map);
-    map.hashKey = (long long unsigned int (*)(const void *))strHash;
-    char* value = mapGet(&map, key);
+    map.hashKey = (long long unsigned int (*)(const void*))strHash;
+    char *value = mapGet(&map, key);
     assertPointersEqual(value, NULL);
     assertIntegersEqual(mapSize(&map), 0);
     mapRelease(&map);
@@ -43,9 +43,9 @@ void emptyMapAddGet() {
     char key[] = "hello";
     char value[] = "world";
     mapCompose(&map);
-    map.hashKey = (long long unsigned int (*)(const void *))strHash;
+    map.hashKey = (long long unsigned int (*)(const void*))strHash;
     mapAdd(&map, key, value);
-    char* result = mapGet(&map, key);
+    char *result = mapGet(&map, key);
     assertPointersEqual(result, value);
     mapRelease(&map);
 }
@@ -58,13 +58,13 @@ void emptyMapAddAddGet() {
     char value1[] = "bar";
     // Setup `map`.
     mapCompose(&map);
-    map.hashKey = (long long unsigned int (*)(const void *))strHash;
+    map.hashKey = (long long unsigned int (*)(const void*))strHash;
     // Add "hello": "world" to `map`.
     mapAdd(&map, key0, value0);
     // Add "foo": "bar" to `map`.
     mapAdd(&map, key1, value1);
     // Verify "hello" returns "world".
-    char* result = mapGet(&map, key0);
+    char *result = mapGet(&map, key0);
     assertPointersEqual(result, value0);
     // Verify "foo" returns "bar".
     result = mapGet(&map, key1);
@@ -80,11 +80,11 @@ void emptyMapAddGetMiss() {
     char key1[] = "foo";
     // Setup `map`.
     mapCompose(&map);
-    map.hashKey = (long long unsigned int (*)(const void *))strHash;
+    map.hashKey = (long long unsigned int (*)(const void*))strHash;
     // Add "hello": "world" to `map`.
     mapAdd(&map, key0, value0);
     // Verify the key "foo" is not in `map`.
-    char* value = mapGet(&map, key1);
+    char *value = mapGet(&map, key1);
     assertPointersEqual(value, NULL);
     // Release map.
     mapRelease(&map);
@@ -103,7 +103,7 @@ void iteratorNewMap() {
 void iteratorMapSizeOne() {
     struct Map map;
     mapCompose(&map);
-    map.hashKey = (long long unsigned int (*)(const void *))strHash;
+    map.hashKey = (long long unsigned int (*)(const void*))strHash;
     char key[] = "hello";
     char value[] = "world";
     mapAdd(&map, key, value);
@@ -118,7 +118,7 @@ void iteratorMapSizeOne() {
 void iteratorMapSizeTwo() {
     struct Map map;
     mapCompose(&map);
-    map.hashKey = (long long unsigned int (*)(const void *))strHash;
+    map.hashKey = (long long unsigned int (*)(const void*))strHash;
     char key0[] = "hello";
     char value0[] = "world";
     char key1[] = "foo";
