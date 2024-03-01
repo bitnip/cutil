@@ -5,6 +5,7 @@
 #include "uri.h"
 
 static int collapsePath(char **result, const char *path) {
+    /*Collapse any occurances of parent directory.*/
     struct List folders;
     listCompose(&folders);
     folders.freeData = free;
@@ -33,25 +34,25 @@ static int collapsePath(char **result, const char *path) {
 
     unsigned int delimCount = folders.size;
     *result = malloc(sizeof(char) * pathLength + delimCount + 1); // TODO: Check result.
+    if(*result) {
+        struct Iterator it = listIterator(&folders);
+        char *collapsedPos = *result;
+        char *folder;
+        unsigned int count = 0;
+        while((folder = listNext(&it))) {
+            unsigned int folderLen = strlen(folder);
+            strCpyTo(collapsedPos, folder);
+            collapsedPos+=folderLen;
 
-    struct Iterator it = listIterator(&folders);
-    char *collapsedPos = *result;
-    char *folder;
-    unsigned int count = 0;
-    while((folder = listNext(&it))) {
-        unsigned int folderLen = strlen(folder);
-        strCpyTo(collapsedPos, folder);
-        collapsedPos+=folderLen;
-
-        if(++count < folders.size) {
-            *collapsedPos = '/';
-            collapsedPos++;
+            if(++count < folders.size) {
+                *collapsedPos = '/';
+                collapsedPos++;
+            }
         }
+        *collapsedPos = 0;
     }
-    *collapsedPos = 0;
     listRelease(&folders);
-
-    return STATUS_OK;
+    return *result ? STATUS_OK : STATUS_ALLOC_ERR;
 }
 
 int parseURI(struct URI *output, const char *input) {
@@ -70,17 +71,23 @@ int parseURI(struct URI *output, const char *input) {
 
     if(!tokenize(&thisToken, &nextDelim, &nextToken, ":")) return STATUS_PARSE_ERR;
     if(!nextToken) return STATUS_PARSE_ERR;
-    // TODO: Check for ALLOC errors for all calls to strCopyN.
+
     output->scheme = strCopyN(thisToken, nextDelim - thisToken);
+    if(output->scheme == NULL) {
+        return STATUS_ALLOC_ERR;
+    }
 
     thisToken = nextToken;
-
     const char *path = NULL;
-
     if(*thisToken == '/' && *(thisToken+1) == '/') {
-        if(!tokenize(&thisToken, &nextDelim, &nextToken, "/")) return STATUS_PARSE_ERR;
-        if(!tokenize(&thisToken, &nextDelim, &nextToken, "/")) return STATUS_PARSE_ERR;
-        if(!tokenize(&thisToken, &nextDelim, &nextToken, "/?#")) return STATUS_PARSE_ERR;
+        if(
+            !tokenize(&thisToken, &nextDelim, &nextToken, "/") ||
+            !tokenize(&thisToken, &nextDelim, &nextToken, "/") ||
+            !tokenize(&thisToken, &nextDelim, &nextToken, "/?#")
+        ) {
+            uriRelease(output);
+            return STATUS_PARSE_ERR;
+        } 
         // TODO: Parse out.
         const char *authorityStart = thisToken;
         const char *authoritySep = (char *)strFindFirst(authorityStart, '@');
@@ -89,10 +96,10 @@ int parseURI(struct URI *output, const char *input) {
         if(authoritySep && authorityEnd > authoritySep) {
             char *userInfoSep = (char *)strFindFirst(authorityStart, ':');
             if(userInfoSep && userInfoSep < authoritySep) {
-                output->username = strCopyN(authorityStart, userInfoSep - authorityStart);
-                output->password = strCopyN(userInfoSep+1, authoritySep - userInfoSep - 1);
+                output->username = strCopyN(authorityStart, userInfoSep - authorityStart); // TODO: Handle failure.
+                output->password = strCopyN(userInfoSep+1, authoritySep - userInfoSep - 1); // TODO: Handle failure.
             } else {
-                output->username = strCopyN(authorityStart, authoritySep - authorityStart);
+                output->username = strCopyN(authorityStart, authoritySep - authorityStart); // TODO: Handle failure.
             }
         }
         // Parse out host and port.
@@ -100,10 +107,10 @@ int parseURI(struct URI *output, const char *input) {
         const char *hostStart = authoritySep ? authoritySep+1 : authorityStart;
         const char *hostSep = (char*)strFindFirst(hostStart, ':');
         if(hostSep && hostSep < authorityEnd) {
-            output->host = strCopyN(hostStart, hostSep - hostStart);
-            output->port = strCopyN(hostSep+1, authorityEnd - hostSep - 1);
+            output->host = strCopyN(hostStart, hostSep - hostStart); // TODO: Handle failure.
+            output->port = strCopyN(hostSep+1, authorityEnd - hostSep - 1); // TODO: Handle failure.
         } else {
-            output->host = strCopyN(hostStart, authorityEnd - hostStart);
+            output->host = strCopyN(hostStart, authorityEnd - hostStart); // TODO: Handle failure.
         }
         path = nextDelim;
     } else {
@@ -111,26 +118,33 @@ int parseURI(struct URI *output, const char *input) {
     }
 
     if(tokenize(&thisToken, &nextDelim, &nextToken, "?#")) {
+        // Extract path from URI.
         output->path = strCopyN(path, nextDelim - path);
-    }
+        if(output->path == NULL) {
+            uriRelease(output);
+            return STATUS_ALLOC_ERR;
+        }
 
-    // Collapse parent directories.
-    char *collapsedPath = NULL;
-    if(!collapsePath(&collapsedPath, output->path)) {
-        // TODO: Fail
+        // Collapse parent directories.
+        char *collapsedPath = NULL;
+        unsigned int result = collapsePath(&collapsedPath, output->path);
+        if(result) {
+            uriRelease(output);
+            return result;
+        }
+        free((char*)output->path);
+        output->path = collapsedPath;
     }
-    free((char*)output->path);
-    output->path = collapsedPath;
 
     if(*nextDelim == '#') {
-        output->fragment = strCopy(nextToken);
+        output->fragment = strCopy(nextToken); // TODO: Handle failure.
         return STATUS_OK;
     }
 
     if(tokenize(&thisToken, &nextDelim, &nextToken, "#")) {
-        output->query = strCopyN(thisToken, nextDelim - thisToken);
+        output->query = strCopyN(thisToken, nextDelim - thisToken); // TODO: Handle failure.
     }
-    output->fragment = strCopy(nextToken);
+    output->fragment = strCopy(nextToken); // TODO: Handle failure.
 
     return STATUS_OK;
 }

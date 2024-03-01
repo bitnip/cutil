@@ -99,13 +99,12 @@ void *genericData(struct Generic *generic) {
     ptr += sizeof(struct Generic);
     return (void*)ptr;
 }
-#include <stdio.h>
+
 void genericRelease(struct Generic *generic) {
     if(!generic) return;
     if(generic->object->release) {
         void* data = genericData(generic);
         generic->object->release(data);
-        printf("%s %p\n", generic->object->name, (void *)genericData(generic));
     }
     free(generic);
 }
