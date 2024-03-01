@@ -1,13 +1,13 @@
-#ifndef __NODE_H
-#define __NODE_H
+#ifndef __LIST_NODE_H
+#define __LIST_NODE_H
 
-struct Node {
+struct ListNode {
     void *data;
-    struct Node *next;
-    struct Node *prev;
+    struct ListNode *next;
+    struct ListNode *prev;
 };
 
-struct Node *nodeCreate(const void *data);
-void nodeFree(struct Node *node, void (*freeData)(void*));
+struct ListNode *nodeCreate(const void *data);
+void nodeFree(struct ListNode *node, void (*freeData)(void*));
 
 #endif

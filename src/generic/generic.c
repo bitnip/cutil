@@ -99,12 +99,13 @@ void *genericData(struct Generic *generic) {
     ptr += sizeof(struct Generic);
     return (void*)ptr;
 }
-
+#include <stdio.h>
 void genericRelease(struct Generic *generic) {
     if(!generic) return;
     if(generic->object->release) {
         void* data = genericData(generic);
         generic->object->release(data);
+        printf("%s %p\n", generic->object->name, (void *)genericData(generic));
     }
     free(generic);
 }
@@ -173,7 +174,7 @@ struct Generic* genericGetNative(struct Generic *root, struct Object *type, void
 }
 
 unsigned int genericAddNative(struct Generic *root, struct Object *type, const void *value, const char *key) {
-    struct Generic *valueGeneric = genericCompose(type);
+    struct Generic *valueGeneric = genericCompose(type); // TODO: Handle alloc failure.
     memcpy(genericData(valueGeneric), value, type->size);
     return genericAdd(root, key, valueGeneric);
 }

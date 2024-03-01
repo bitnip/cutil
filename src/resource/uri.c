@@ -1,7 +1,58 @@
 #include <stdlib.h>
 #include "../error.h"
 #include "../string.h"
+#include "../list/list.h"
 #include "uri.h"
+
+static int collapsePath(char **result, const char *path) {
+    struct List folders;
+    listCompose(&folders);
+    folders.freeData = free;
+
+    unsigned int pathLength = 0;
+    const char *thisToken = path;
+    const char *nextDelim = NULL;
+    const char *nextToken = NULL;
+    while(tokenize(&thisToken, &nextDelim, &nextToken, "/")) {
+        unsigned int length = nextDelim-thisToken;
+        if(strCmpN(thisToken, "..", 2) == 0) {
+            const char *prev = listRemoveTail(&folders);
+            if(prev) {
+                pathLength -= strlen(prev);
+            }
+        } else {
+            pathLength += length;
+            char *folder = strCopyN(thisToken, length);
+            int addResult = listAddTail(&folders, folder);
+            if(addResult) {
+                listRelease(&folders);
+                return STATUS_ALLOC_ERR;
+            }
+        }
+    }
+
+    unsigned int delimCount = folders.size;
+    *result = malloc(sizeof(char) * pathLength + delimCount + 1); // TODO: Check result.
+
+    struct Iterator it = listIterator(&folders);
+    char *collapsedPos = *result;
+    char *folder;
+    unsigned int count = 0;
+    while((folder = listNext(&it))) {
+        unsigned int folderLen = strlen(folder);
+        strCpyTo(collapsedPos, folder);
+        collapsedPos+=folderLen;
+
+        if(++count < folders.size) {
+            *collapsedPos = '/';
+            collapsedPos++;
+        }
+    }
+    *collapsedPos = 0;
+    listRelease(&folders);
+
+    return STATUS_OK;
+}
 
 int parseURI(struct URI *output, const char *input) {
     output->scheme = NULL;
@@ -62,6 +113,14 @@ int parseURI(struct URI *output, const char *input) {
     if(tokenize(&thisToken, &nextDelim, &nextToken, "?#")) {
         output->path = strCopyN(path, nextDelim - path);
     }
+
+    // Collapse parent directories.
+    char *collapsedPath = NULL;
+    if(!collapsePath(&collapsedPath, output->path)) {
+        // TODO: Fail
+    }
+    free((char*)output->path);
+    output->path = collapsedPath;
 
     if(*nextDelim == '#') {
         output->fragment = strCopy(nextToken);

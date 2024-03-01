@@ -121,7 +121,7 @@ char strCmp(const char *toCheck, const char *toMatch) {
     /*Note: Assumes `toCheck` and `toMatch` are null terminated.*/
     if(toCheck == toMatch) return 0;
     else if(toCheck == NULL) return -1;
-    else if(toMatch  == NULL) return 1;
+    else if(toMatch == NULL) return 1;
     do {
         char result = *toMatch - *toCheck++;
         if(result) return result;
@@ -150,11 +150,11 @@ char tokenize(
     const char **nextToken,
     const char *delimiters) {
     /*
-    Subsequent calls advance thisToken past next delimiter.
+    Subsequent calls advance `thisToken` past next delimiter.
     Note:
-      thisToken is advanced to the start of the next token.
-      nextDelimiter is set to the end of thisToken.
-      nextToken is set to the following token or NULL.
+      `thisToken` is advanced to the start of the next token.
+      `nextDelimiter` is set to the end of `thisToken`.
+      `nextToken` is set to the following token or NULL.
     */
     if (*nextToken == NULL) {
         if (*nextDelimiter) return 0; // Finished processing.

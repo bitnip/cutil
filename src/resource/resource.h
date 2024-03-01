@@ -10,13 +10,12 @@ extern "C"{
 #include "uri.h"
 
 struct ResourceAdapter {
-    struct Map schemes;
-    struct Map adapterByExt;
-    struct Map resources; // Resources by URI. 
+    struct Map schemes;       // { char *ext : struct Scheme * }
+    struct Map extToAdapter;  // { char *ext : struct Adapter * }
+    struct Map uriToResource; // { char *uri : { char *name : struct Generic * } }
 };
-int resourceAdapterCompose(struct ResourceAdapter*);
-void resourceAdapterRelease(struct ResourceAdapter*);
-
+int resourceAdapterCompose(struct ResourceAdapter *);
+void resourceAdapterRelease(struct ResourceAdapter *);
 
 /* TODO: Future improvements.
 enum ResourceStatus {

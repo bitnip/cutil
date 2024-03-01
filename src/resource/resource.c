@@ -40,7 +40,7 @@ int load(
     char *fileURI = uriStrip(&u, URI_QUERY | URI_FRAGMENT);
 
     // Check if the resource is already loaded.
-    struct Generic *item = (struct Generic*)mapGet(&ra->resources, fileURI);
+    struct Generic *item = (struct Generic*)mapGet(&ra->uriToResource, fileURI);
     if(item) {
         uriRelease(&u);
         free(fileURI);
@@ -64,7 +64,7 @@ int load(
     }
 
     // Check if an adapter exists for this extension.
-    struct Adapter *adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
+    struct Adapter *adapter = (struct Adapter*)mapGet(&ra->extToAdapter, ext);
     if(!adapter) {
         uriRelease(&u);
         free(fileURI);
@@ -89,7 +89,7 @@ int load(
     }
 
     // Track loaded resource.
-    result = mapAdd(&ra->resources, fileURI, item);
+    result = mapAdd(&ra->uriToResource, fileURI, item);
     if(result) {
         uriRelease(&u);
         free(fileURI);
@@ -114,7 +114,7 @@ int save(
     if(!scheme) return STATUS_SCHEME_ERR;
     // Check if the format is recognized.
     const char *ext = extFromPath(u.path);
-    struct Adapter* adapter = (struct Adapter*)mapGet(&ra->adapterByExt, ext);
+    struct Adapter* adapter = (struct Adapter*)mapGet(&ra->extToAdapter, ext);
     if(!adapter) return STATUS_FORMAT_ERR;
 
     struct Buffer buffer;
@@ -129,17 +129,17 @@ int save(
 int resourceAdapterCompose(struct ResourceAdapter *ra) {
     mapCompose(&ra->schemes);
     ra->schemes.hashKey = strHash;
-    mapCompose(&ra->adapterByExt);
-    ra->adapterByExt.hashKey = strHash;
-    mapCompose(&ra->resources);
-    ra->resources.hashKey = strHash;
-    ra->resources.freeData = (void (*)(void*))genericRelease;
-    ra->resources.freeKey = free;
+    mapCompose(&ra->extToAdapter);
+    ra->extToAdapter.hashKey = strHash;
+    mapCompose(&ra->uriToResource);
+    ra->uriToResource.hashKey = strHash;
+    ra->uriToResource.freeData = (void (*)(void*))genericRelease;
+    ra->uriToResource.freeKey = free;
     return STATUS_OK;
 }
 
 void resourceAdapterRelease(struct ResourceAdapter *ra) {
-    mapRelease(&ra->resources);
-    mapRelease(&ra->adapterByExt);
+    mapRelease(&ra->uriToResource);
+    mapRelease(&ra->extToAdapter);
     mapRelease(&ra->schemes);
 }

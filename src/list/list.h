@@ -9,8 +9,8 @@ extern "C"{
 
 struct List {
     int size;
-    struct Node *head;
-    struct Node *tail;
+    struct ListNode *head;
+    struct ListNode *tail;
     int (*compare)(const void*, const void*);
     char *(*toString)(const void*);
     void (*freeData)(void*);

@@ -180,6 +180,20 @@ void testURIStrip() {
     uriRelease(&uri);
 }
 
+void testParseURICollapseParentDirectory() {
+    char input[] = "file:/data/city/../ground/dirt.png#";
+    struct URI uri;
+    int result = parseURI(&uri, input);
+    assertIntegersEqual(result, STATUS_OK);
+    assertStringsEqual(uri.scheme, "file");
+    assertIsNull(uri.host);
+    assertStringsEqual(uri.path, "/data/ground/dirt.png");
+    assertIsNull(uri.query);
+    assertStringsEqual(uri.fragment, "");
+
+    uriRelease(&uri);
+}
+
 void uriTest() {
     testParseInvalidUri();
     testParseFileScheme();
@@ -193,4 +207,5 @@ void uriTest() {
     testParseURINoQueryWithFragment();
     testParseURINoQueryWithFragment2();
     testURIStrip();
+    testParseURICollapseParentDirectory();
 }
