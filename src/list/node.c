@@ -3,8 +3,6 @@
 
 struct ListNode *nodeCreate(const void *data) {
     struct ListNode *node = (struct ListNode*)malloc(sizeof(struct ListNode));
-    node->next = NULL;
-    node->prev = NULL;
     node->data = (void*)data;
     return node;
 }

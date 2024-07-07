@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "list.h"
 #include "../error.h"
 
@@ -21,12 +22,13 @@ void listFree(struct List *list) {
 }
 
 int listCompose(struct List *list) {
-    list->size = 0;
+    memset(list, 0, sizeof(struct List));
+    /*list->size = 0;
     list->head = NULL;
     list->tail = NULL;
     list->compare = NULL;
     list->toString = NULL;
-    list->freeData = NULL;
+    list->freeData = NULL;*/
     return STATUS_OK;
 }
 
@@ -41,35 +43,33 @@ int listIsEmpty(const struct List *list) {
 void listAddHead(struct List *list, const void *data) {
     if(list == NULL || data == NULL) return;
 
-    struct ListNode* node;
-    node = nodeCreate(data);
+    struct ListNode *node = nodeCreate(data);
 
     list->size++;
+    if(list->head == NULL) {
+        list->tail = node;
+    } else {
+        list->head->prev = node;
+    }
     node->next = list->head;
     node->prev = NULL;
-
-    if(list->head == NULL)
-        list->tail = node;
-    else
-        list->head->prev = node;
-
     list->head = node;
 }
 
 static void listAddTailNode(struct List *list, struct ListNode *node) {
     list->size++;
     if(list->tail) {
-        node->prev = list->tail;
         list->tail->next = node;
-    }
-    else {
+    } else {
         list->head = node;
     }
+    node->prev = list->tail;
+    node->next = NULL;
     list->tail = node;
 }
 
 int listAddTail(struct List *list, const void *data) {
-    if(list == NULL || data == NULL) return 1;
+    if(list == NULL || data == NULL) return STATUS_INPUT_ERR;
 
     struct ListNode *node = nodeCreate(data);
     if(!node) return STATUS_ALLOC_ERR;
@@ -88,13 +88,13 @@ void *listRemoveHead(struct List *list) {
 
     list->head = list->head->next;
 
-    if(list->head == NULL)
+    if(list->head == NULL) {
         list->tail = NULL;
-    else
+    } else {
         list->head->prev = NULL;
+    }
 
     nodeFree(node, NULL);
-
     return data;
 }
 
@@ -108,13 +108,13 @@ void *listRemoveTail(struct List *list) {
 
     list->tail = list->tail->prev;
 
-    if(list->tail == NULL)
+    if(list->tail == NULL) {
         list->head = NULL;
-    else
+    } else {
         list->tail->next = NULL;
+    }
 
     nodeFree(node, NULL);
-
     return data;
 }
 
@@ -185,25 +185,16 @@ struct Iterator listIterator(struct List *list) {
 static struct ListNode *listCurrentNode(struct Iterator *itr) {
     /* Current node or set current node to new default. */
     if(!itr) return NULL;
-    struct List* list = itr->collection;
     if(itr->current) return itr->current;
+
     // Default based on iteration mode.
+    struct List *list = itr->collection;
     switch(itr->mode) {
         case ITERATION_FORWARD:
-            if(list->head) {
-                itr->current = list->head;
-            } else {
-                //itr->mode = ITERATION_DONE;
-                break;
-            }
+            itr->current = list->head;
             break;
         case ITERATION_REVERSE:
-            if(list->tail) {
-                itr->current = list->tail;
-            } else {
-                //itr->mode = ITERATION_DONE;
-                break;
-            }
+            itr->current = list->tail;
             break;
         default:
             itr->mode = ITERATION_DONE;
@@ -220,8 +211,9 @@ void *listNext(struct Iterator *itr) {
     if(!itr) return NULL;
     if(itr->mode == ITERATION_DONE) return NULL;
 
-    struct ListNode *current = itr->current;
-    if(current) {
+    int advance = itr->current != NULL;
+    struct ListNode *current = listCurrentNode(itr);
+    if(advance) {
         switch(itr->mode) {
             case ITERATION_FORWARD:
                 current = current->next;
@@ -232,11 +224,9 @@ void *listNext(struct Iterator *itr) {
             default:
                 current = NULL;
         }
-    } else {
-        current = listCurrentNode(itr);
+        itr->current = current;
     }
 
-    itr->current = current;
     if(current) {
         return current->data;
     } else {
@@ -260,33 +250,33 @@ int listAddCurrent(struct Iterator *itr, void *data) {
     if(!node) return STATUS_ALLOC_ERR;
     if(current) {
         switch(itr->mode) {
-            case ITERATION_FORWARD:
-                /*Place node after current*/
-                if(list->tail == current) {
-                    list->tail = node;
-                } else {
-                    node->next = current->next;
-                    current->next->prev = node;
-                }
-                current->next = node;
-                node->prev = current;
-                list->size++;
-                break;
             case ITERATION_REVERSE:
                 /*Place node before current*/
                 if(list->head == current) {
                     list->head = node;
+                    node->prev = NULL;
                 } else {
                     node->prev = current->prev;
                     current->prev->next = node;
                 }
                 current->prev = node;
                 node->next = current;
-                list->size++;
                 break;
             default:
+            //case ITERATION_FORWARD:
+                /*Place node after current*/
+                if(list->tail == current) {
+                    list->tail = node;
+                    node->next = NULL;
+                } else {
+                    node->next = current->next;
+                    current->next->prev = node;
+                }
+                current->next = node;
+                node->prev = current;
                 break;
         }
+        list->size++;
     } else {
         listAddTailNode(list, node);
     }

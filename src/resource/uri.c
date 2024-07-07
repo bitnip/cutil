@@ -5,7 +5,7 @@
 #include "uri.h"
 
 static int collapsePath(char **result, const char *path) {
-    /*Collapse any occurances of parent directory.*/
+    // Collapse any occurances of parent directory.
     struct List folders;
     listCompose(&folders);
     folders.freeData = free;

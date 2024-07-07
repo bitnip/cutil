@@ -7,7 +7,8 @@ include cfg/cfg.mk
 
 CC=x86_64-w64-mingw32-gcc
 CC_COVERAGE=gcc
-CFLAGS=-Wall -Werror -pedantic -save-temps -O1 -fno-builtin -fno-ident
+
+CFLAGS=-Wall -Werror -save-temps -pedantic -O3 -fno-builtin -fno-ident -ffast-math
 CFLAGS_COVERAGE=-coverage -fprofile-arcs -ftest-coverage -g -ggdb
 CFLAGS_DEBUG=-g -ggdb
 BUILDCMD=${CC} ${CFLAGS_OUTPUT} ${CFLAGS} ${INCLUDES} $^ ${LIBRARIES} ${FRAMEWORKS}

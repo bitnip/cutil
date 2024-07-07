@@ -103,7 +103,7 @@ void *genericData(struct Generic *generic) {
 void genericRelease(struct Generic *generic) {
     if(!generic) return;
     if(generic->object->release) {
-        void* data = genericData(generic);
+        void *data = genericData(generic);
         generic->object->release(data);
     }
     free(generic);
@@ -138,6 +138,7 @@ struct Generic *genericCompose(struct Object *object) {
 struct Generic *genericGet(struct Generic *root, const char *key) {
     if(key == NULL || root == NULL) return NULL;
 
+    // TODO: Handle as part of generics.
     struct Collection *collection = (struct Collection*)root->object;
     if(collection != &Map && collection != &List && collection != &Array) {
         return NULL;
@@ -191,7 +192,7 @@ struct Generic *getAt(struct Generic *root, const char *path) {
         }
 
         if(nextToken) {
-            char *key = strCopyN(thisToken, nextDelim - thisToken);
+            char *key = strCopyN(thisToken, nextDelim - thisToken); // TODO: handle malloc failure.
             root = collection->get(genericData(root), key);
             free(key);
         } else {
@@ -213,7 +214,7 @@ unsigned int addAt(struct Generic *root, const char *path, struct Generic *value
             return STATUS_FOUND_ERR;
         }
 
-        char *key = strCopyN(thisToken, nextDelim - thisToken);
+        char *key = strCopyN(thisToken, nextDelim - thisToken); // TODO: handle malloc failure.
         if(nextToken) {
             root = collection->get(genericData(root), key);
         } else {
