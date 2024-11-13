@@ -26,11 +26,14 @@ struct URI {
     const char *fragment;
 };
 
+struct URI *uriAlloc();
+void uriCompose(struct URI *uri);
 int parseURI(struct URI *output, const char *input);
 char *uriToStr(struct URI *uri);
 char *uriSwapExt(struct URI *input, const char *ext, unsigned char flags);
 char *uriSwapFile(struct URI *input, const char *file, unsigned char flags);
 void uriRelease(struct URI *uri);
+void uriFree(struct URI *uri);
 char *charGetFileName(const char *input);
 char *uriStrip(struct URI *uri, unsigned char flags);
 

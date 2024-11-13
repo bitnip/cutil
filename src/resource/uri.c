@@ -4,6 +4,21 @@
 #include "../list/list.h"
 #include "uri.h"
 
+struct URI *uriAlloc() {
+    return malloc(sizeof(struct URI));
+}
+
+void uriCompose(struct URI *uri) {
+    uri->scheme = NULL;
+    uri->username = NULL;
+    uri->password = NULL;
+    uri->host = NULL;
+    uri->port = NULL;
+    uri->path = NULL;
+    uri->query = NULL;
+    uri->fragment = NULL;
+}
+
 static int collapsePath(char **result, const char *path) {
     // Collapse any occurances of parent directory.
     struct List folders;
@@ -56,14 +71,8 @@ static int collapsePath(char **result, const char *path) {
 }
 
 int parseURI(struct URI *output, const char *input) {
-    output->scheme = NULL;
-    output->username = NULL;
-    output->password = NULL;
-    output->host = NULL;
-    output->port = NULL;
-    output->path = NULL;
-    output->query = NULL;
-    output->fragment = NULL;
+    uriCompose(output);
+
     // TODO: Only allow valid characters...
     const char *thisToken = (char*)input;
     const char *nextDelim = NULL;
@@ -158,6 +167,11 @@ void uriRelease(struct URI *uri) {
     if(uri->path) free((void*)uri->path);
     if(uri->query) free((void*)uri->query);
     if(uri->fragment) free((void*)uri->fragment);
+}
+
+void uriFree(struct URI *uri) {
+    uriRelease(uri);
+    free(uri);
 }
 
 char *uriToStr(struct URI *uri) {

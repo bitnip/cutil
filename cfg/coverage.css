@@ -251,7 +251,8 @@ meter.coverage-high:-moz-meter-optimum::-moz-meter-bar
 
 /*** End of Meter formats ***/
 .file-list td, .file-list th {
-    padding: 0.25em 0.5em;
+    padding: 0 10px;
+    font-weight: bold;
 }
 
 .file-list td {

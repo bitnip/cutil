@@ -3,31 +3,46 @@
 #include "file.h"
 #include "../error.h"
 
+#define READ_CHUCK_BYTES 1048576 // 1MiB
 int fileLoad(struct URI *uri, struct Buffer *buffer) {
-    FILE *fp;
-    int result = STATUS_OK;
-    if((fp = fopen(uri->path+1, "rb"))) {
-        fseek(fp, 0L, SEEK_END);
-        buffer->byteCount = ftell(fp);
-        fseek(fp, 0L, SEEK_SET);
-        if((buffer->bytes = (char*)malloc(buffer->byteCount+1))) {
-            unsigned int readCount = fread(
-                buffer->bytes, sizeof(char), buffer->byteCount, fp);
-            if(readCount==buffer->byteCount) {
-                result = STATUS_OK;
-                buffer->bytes[buffer->byteCount] = 0;
-            } else {
-                result = STATUS_INPUT_ERR;
-                free(buffer->bytes);
-            }
-        } else {
-            result = STATUS_ALLOC_ERR;
+    FILE *fp = fopen(uri->path+1, "rb");
+    if(fp == NULL) return STATUS_FOUND_ERR;
+
+    char  *data = NULL, *temp;
+    size_t bufferSize = 0;
+    size_t used = 0;
+    while(1) {
+        bufferSize = used + READ_CHUCK_BYTES + 1;
+        if( // Check for overflow.
+            bufferSize <= used ||
+            // Resize buffer to fit next read chunk.
+            !(temp = realloc(data, bufferSize))
+        ) {
+            free(data);
+            return STATUS_ALLOC_ERR;
         }
-        fclose(fp);
-    } else {
-        result = STATUS_FOUND_ERR;
+
+        data = temp;
+
+        size_t n = fread(data + used, 1, READ_CHUCK_BYTES, fp);
+        used+=n;
+        if(n < READ_CHUCK_BYTES) break;
     }
-    return result;
+
+    if (ferror(fp)) {
+        free(data);
+        return STATUS_FOUND_ERR;
+    }
+
+    // Could realloc(data, used+1)
+    // but buffer is freed after parsing anyway.
+
+    data[used] = '\0';
+
+    buffer->byteCount = used;
+    buffer->bytes = data;
+
+    return STATUS_OK;
 }
 
 int fileSave(struct URI *uri, struct Buffer *buffer){

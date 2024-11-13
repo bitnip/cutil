@@ -1,4 +1,7 @@
+#include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
+
 #include "../error.h"
 
 int longParse(const char *input, char base, long *output) {

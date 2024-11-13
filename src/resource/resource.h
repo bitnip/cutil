@@ -9,28 +9,32 @@ extern "C"{
 #include "buffer.h"
 #include "uri.h"
 
+enum ResourceStatus {
+    RES_STATUS_LOADING, // Resource is being loaded.
+    RES_STATUS_SAVING,  // Resource is being saved.
+    RES_STATUS_UNLOADED,// Resource is not loaded.
+    RES_STATUS_LOADED,  // Resource is loaded and saved.
+    RES_STATUS_UNSAVED  // Resource is loaded but unsaved.
+};
+struct Resource {
+    struct URI uri;
+    struct Generic *cache;
+    enum ResourceStatus status;
+};
+
 struct ResourceAdapter {
     struct Map schemes;       // { char *ext : struct Scheme * }
     struct Map extToAdapter;  // { char *ext : struct Adapter * }
-    struct Map uriToResource; // { char *uri : { char *name : struct Generic * } }
+    struct Map uriToGeneric;  // { char *uri : { char *name : struct Generic * } }
+    struct Map uriToResource; // { char *uri : struct Resource * }
+    void (*statusCallback)(
+        void *statusContext,
+        struct Resource *resource,
+        enum ResourceStatus status);
+    void *statusContext;
 };
 int resourceAdapterCompose(struct ResourceAdapter *);
 void resourceAdapterRelease(struct ResourceAdapter *);
-
-/* TODO: Future improvements.
-enum ResourceStatus {
-    RES_STATUS_ERROR, // data set to error code.
-    RES_STATUS_CACHE, // data points to cache uri if different than uri.
-    RES_STATUS_ADAPT, // data is being converted.
-    RES_STATUS_PARSE, // data is being parsed.
-    RES_STATUS_FETCH, // data is being loaded.
-    RES_STATUS_START  // data is staged for loading.
-};
-struct Resource {
-    const char* uri;
-    struct Generic* data;
-    enum ResourceStatus status;
-};*/
 
 struct Scheme {
     int (*load)(struct URI *uri, struct Buffer *buffer);
@@ -53,6 +57,12 @@ struct Adapter {
 
 int load(struct ResourceAdapter *ra, const char *uri, struct Generic **output);
 int save(struct ResourceAdapter *ra, const char *uri, struct Generic *input);
+
+struct Resource *resourceAlloc();
+void resourceFree(struct Resource *r);
+struct Resource *resourceLoad(struct ResourceAdapter *ra, const char *uri);
+struct Resource *resourceSave(struct ResourceAdapter *ra, const char *uri);
+void resourceUpdate(struct ResourceAdapter *ra);
 
 #ifdef __cplusplus
 }

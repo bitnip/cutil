@@ -29,6 +29,8 @@ int getSubResource(
     return STATUS_INPUT_ERR;
 }
 
+
+
 int load(
         struct ResourceAdapter *ra,
         const char *uri,
@@ -40,11 +42,12 @@ int load(
     char *fileURI = uriStrip(&u, URI_QUERY | URI_FRAGMENT);
 
     // Check if the resource is already loaded.
-    struct Generic *item = (struct Generic*)mapGet(&ra->uriToResource, fileURI);
+    struct Generic *item = (struct Generic*)mapGet(&ra->uriToGeneric, fileURI);
     if(item) {
-        uriRelease(&u);
         free(fileURI);
-        return getSubResource(u, item, output);
+        int result = getSubResource(u, item, output);
+        uriRelease(&u);
+        return result;
     }
 
     // Check if the protocol is recognized.
@@ -89,7 +92,7 @@ int load(
     }
 
     // Track loaded resource.
-    result = mapAdd(&ra->uriToResource, fileURI, item);
+    result = mapAdd(&ra->uriToGeneric, fileURI, item);
     if(result) {
         uriRelease(&u);
         free(fileURI);
@@ -126,20 +129,119 @@ int save(
     return result;
 }
 
+struct Resource *resourceAlloc() {
+    struct Resource *r = malloc(sizeof(struct Resource));
+    r->cache = NULL;
+    r->status = RES_STATUS_LOADING;
+    uriCompose(&r->uri);
+    return r;
+}
+
+void resourceFree(struct Resource *r) {
+    uriRelease(&r->uri);
+    free(r);
+}
+
 int resourceAdapterCompose(struct ResourceAdapter *ra) {
     mapCompose(&ra->schemes);
     ra->schemes.hashKey = strHash;
     mapCompose(&ra->extToAdapter);
     ra->extToAdapter.hashKey = strHash;
+    mapCompose(&ra->uriToGeneric);
+    ra->uriToGeneric.hashKey = strHash;
+    ra->uriToGeneric.freeData = (void (*)(void*))genericRelease;
+    ra->uriToGeneric.freeKey = free;
     mapCompose(&ra->uriToResource);
     ra->uriToResource.hashKey = strHash;
-    ra->uriToResource.freeData = (void (*)(void*))genericRelease;
+    ra->uriToResource.freeData = (void (*)(void*))resourceFree;
     ra->uriToResource.freeKey = free;
+    ra->statusCallback = NULL;
+    ra->statusContext = NULL;
     return STATUS_OK;
 }
 
 void resourceAdapterRelease(struct ResourceAdapter *ra) {
     mapRelease(&ra->uriToResource);
+    mapRelease(&ra->uriToGeneric);
     mapRelease(&ra->extToAdapter);
     mapRelease(&ra->schemes);
+    ra->statusCallback = NULL;
+    ra->statusContext = NULL;
+}
+
+struct Resource *resourceLoad(struct ResourceAdapter *ra, const char *uri) {
+    struct URI u;
+    if(parseURI(&u, uri)) return NULL; //return STATUS_INPUT_ERR;
+
+    // Check if the resource is already loaded.
+    struct Resource *resource = (struct Resource*)mapGet(&ra->uriToResource, uri);
+    if(resource) {
+        uriRelease(&u);
+    } else {
+        resource = resourceAlloc();
+        if(resource) {
+            resource->uri = u;
+            resource->status = RES_STATUS_LOADING;
+            if(mapAdd(&ra->uriToResource, strCopy(uri), resource)) { // TODO:
+                resourceFree(resource);
+                uriRelease(&u);
+            }
+        } else {
+            uriRelease(&u);
+        }
+    }
+    return resource;
+}
+
+struct Resource *resourceSave(struct ResourceAdapter *ra, const char *uri) {
+    struct URI u;
+    if(parseURI(&u, uri)) return NULL; //return STATUS_INPUT_ERR;
+
+    // Check if the resource is already loaded.
+    struct Resource *resource = (struct Resource*)mapGet(&ra->uriToResource, uri);
+    if(resource) {
+        uriRelease(&u);
+    } else {
+        resource = resourceAlloc();
+        if(resource) {
+            resource->uri = u;
+            resource->status = RES_STATUS_SAVING;
+            if(mapAdd(&ra->uriToResource, strCopy(uri), resource)) { // TODO:
+                resourceFree(resource);
+                return NULL;
+            }
+        } else {
+            uriRelease(&u);
+        }
+    }
+    return resource;
+}
+
+void resourceUpdate(struct ResourceAdapter *ra) {
+    struct Iterator it = mapIterator(&ra->uriToResource);
+    struct Resource *resource;
+    while((resource = mapNext(&it))) {
+        int result;
+        if(resource->status == RES_STATUS_LOADING) {
+            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
+
+            char *uri = uriToStr(&resource->uri); // TODO:
+            result = load(ra, uri, &resource->cache);
+            free(uri);
+            resource->status = result ? RES_STATUS_UNLOADED : RES_STATUS_LOADED;
+
+            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
+            break;
+        } else if(resource->status == RES_STATUS_SAVING) {
+            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
+
+            char *uri = uriToStr(&resource->uri); // TODO:
+            result = save(ra, uri, resource->cache);
+            free(uri);
+            resource->status = result ? RES_STATUS_UNSAVED : RES_STATUS_LOADED;
+
+            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
+            break;
+        }
+    }
 }
