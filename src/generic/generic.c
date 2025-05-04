@@ -84,7 +84,7 @@ struct Object Float = {
     NULL
 };
 
-struct Object Bool = {
+struct Object Boolean = {
     sizeof(char),
     "Boolean",
     NULL,

@@ -26,7 +26,7 @@ extern struct Collection Map;
 extern struct Object String;
 extern struct Object Integer;
 extern struct Object Float;
-extern struct Object Bool;
+extern struct Object Boolean;
 extern struct Object Pointer;
 
 void *objectCompose();

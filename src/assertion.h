@@ -4,9 +4,9 @@
 extern "C"{
 #endif
 
+#include <math.h>
 #include <stdio.h>
 #include "string.h"
-#include "math.h"
 
 extern int asserts_failed;
 extern int asserts_passed;
@@ -37,7 +37,7 @@ ASSERT_MACRO( \
 
 #define assertFloatsEqual(actual, expected) \
 ASSERT_MACRO( \
-    fabs((actual) - (expected)) > 0.01, \
+    fabsf((actual) - (expected)) > 0.01, \
     "\tActual: %f Expected: %f\n", (actual), (expected) \
 );
 
