@@ -37,7 +37,6 @@ void addVectorToVectorTest() {
         result = addAt(base, paths[i], genericCompose(&Array.object));
         assertIntegersEqual(result, STATUS_OK);
     }
-    // TODO: add collection size function.
     assertIntegersEqual(((struct Map*)genericData(base))->size, 3);
     genericRelease(base);
 }

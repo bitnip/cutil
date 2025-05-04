@@ -9,14 +9,7 @@ struct URI *uriAlloc() {
 }
 
 void uriCompose(struct URI *uri) {
-    uri->scheme = NULL;
-    uri->username = NULL;
-    uri->password = NULL;
-    uri->host = NULL;
-    uri->port = NULL;
-    uri->path = NULL;
-    uri->query = NULL;
-    uri->fragment = NULL;
+    memset(uri, 0,  sizeof(struct URI));
 }
 
 static int collapsePath(char **result, const char *path) {
@@ -48,7 +41,7 @@ static int collapsePath(char **result, const char *path) {
     }
 
     unsigned int delimCount = folders.size;
-    *result = malloc(sizeof(char) * pathLength + delimCount + 1); // TODO: Check result.
+    *result = malloc(sizeof(char) * pathLength + delimCount + 1);
     if(*result) {
         struct Iterator it = listIterator(&folders);
         char *collapsedPos = *result;
@@ -159,14 +152,14 @@ int parseURI(struct URI *output, const char *input) {
 }
 
 void uriRelease(struct URI *uri) {
-    if(uri->scheme) free((void*)uri->scheme);
-    if(uri->username) free((void*)uri->username);
-    if(uri->password) free((void*)uri->password);
-    if(uri->host) free((void*)uri->host);
-    if(uri->port) free((void*)uri->port);
-    if(uri->path) free((void*)uri->path);
-    if(uri->query) free((void*)uri->query);
-    if(uri->fragment) free((void*)uri->fragment);
+    free((void*)uri->scheme);
+    free((void*)uri->username);
+    free((void*)uri->password);
+    free((void*)uri->host);
+    free((void*)uri->port);
+    free((void*)uri->path);
+    free((void*)uri->query);
+    free((void*)uri->fragment);
 }
 
 void uriFree(struct URI *uri) {
@@ -258,7 +251,7 @@ char *uriSwapExt(struct URI *input, const char *ext, unsigned char flags) {
     const char *dot = strFindLast(input->path, '.');
     unsigned int sansExtLength = dot ? dot - input->path : strlen(input->path);
     int newPathLength = sansExtLength + 1 + strlen(ext);
-    char *tmpPath = malloc(newPathLength + 1);
+    char *tmpPath = malloc(newPathLength + 1); // TODO:
     tmp.path = tmpPath;
     tmpPath[newPathLength] = 0;
     tmpPath += strCpyNTo(tmpPath, sansExtLength, input->path);

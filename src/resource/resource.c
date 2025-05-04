@@ -171,23 +171,24 @@ void resourceAdapterRelease(struct ResourceAdapter *ra) {
 
 struct Resource *resourceLoad(struct ResourceAdapter *ra, const char *uri) {
     struct URI u;
-    if(parseURI(&u, uri)) return NULL; //return STATUS_INPUT_ERR;
+    if(parseURI(&u, uri)) return NULL;
 
-    // Check if the resource is already loaded.
     struct Resource *resource = (struct Resource*)mapGet(&ra->uriToResource, uri);
-    if(resource) {
+    if(resource) { // The resource is already loaded.
         uriRelease(&u);
-    } else {
+    } else { // Load the resource.
         resource = resourceAlloc();
-        if(resource) {
+        char *uriStr = strCopy(uri);
+        if(resource && uriStr) {
             resource->uri = u;
             resource->status = RES_STATUS_LOADING;
-            if(mapAdd(&ra->uriToResource, strCopy(uri), resource)) { // TODO:
+            if(mapAdd(&ra->uriToResource, uriStr, resource)) {
                 resourceFree(resource);
                 uriRelease(&u);
             }
         } else {
             uriRelease(&u);
+            free(uriStr);
         }
     }
     return resource;
@@ -203,15 +204,17 @@ struct Resource *resourceSave(struct ResourceAdapter *ra, const char *uri) {
         uriRelease(&u);
     } else {
         resource = resourceAlloc();
-        if(resource) {
+        char *uriStr = strCopy(uri);
+        if(resource && uriStr) {
             resource->uri = u;
             resource->status = RES_STATUS_SAVING;
-            if(mapAdd(&ra->uriToResource, strCopy(uri), resource)) { // TODO:
+            if(mapAdd(&ra->uriToResource, uriStr, resource)) {
                 resourceFree(resource);
                 return NULL;
             }
         } else {
             uriRelease(&u);
+            free(uriStr);
         }
     }
     return resource;
@@ -221,27 +224,41 @@ void resourceUpdate(struct ResourceAdapter *ra) {
     struct Iterator it = mapIterator(&ra->uriToResource);
     struct Resource *resource;
     while((resource = mapNext(&it))) {
-        int result;
-        if(resource->status == RES_STATUS_LOADING) {
-            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
-
-            char *uri = uriToStr(&resource->uri); // TODO:
-            result = load(ra, uri, &resource->cache);
-            free(uri);
-            resource->status = result ? RES_STATUS_UNLOADED : RES_STATUS_LOADED;
-
-            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
+        switch (resource->status)
+        {
+        case RES_STATUS_LOADING:
+        case RES_STATUS_SAVING:
             break;
-        } else if(resource->status == RES_STATUS_SAVING) {
-            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
-
-            char *uri = uriToStr(&resource->uri); // TODO:
-            result = save(ra, uri, resource->cache);
-            free(uri);
-            resource->status = result ? RES_STATUS_UNSAVED : RES_STATUS_LOADED;
-
-            if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
-            break;
+        default:
+            continue;
         }
+
+        char *uri = uriToStr(&resource->uri);
+        if(uri == NULL) {
+            // TODO: Fails silently.
+            continue;
+        }
+
+        if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
+
+        int result;
+        switch (resource->status)
+        {
+        case RES_STATUS_LOADING:
+            result = load(ra, uri, &resource->cache);
+            resource->status = result ? RES_STATUS_UNLOADED : RES_STATUS_LOADED;
+            break;
+        case RES_STATUS_SAVING:
+            result = save(ra, uri, resource->cache);
+            resource->status = result ? RES_STATUS_UNSAVED : RES_STATUS_LOADED;
+            break;
+        default:
+            continue;
+        }
+
+        if(ra->statusCallback) ra->statusCallback(ra->statusContext, resource, resource->status);
+
+        free(uri);
+        break;
     }
 }

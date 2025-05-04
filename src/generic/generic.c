@@ -162,8 +162,8 @@ unsigned int genericAdd(struct Generic *root, const char *key, struct Generic *v
     return collection->add(genericData(root), strCopy(key), value);
 }
 
-struct Generic* genericGetNative(struct Generic *root, struct Object *type, void *value, const char *key) {
-    struct Generic* valueGeneric = genericGet(root, key);
+struct Generic *genericGetNative(struct Generic *root, struct Object *type, void *value, const char *key) {
+    struct Generic *valueGeneric = genericGet(root, key);
     if(valueGeneric) {
         if(valueGeneric->object != type) {
             return NULL;
@@ -174,16 +174,20 @@ struct Generic* genericGetNative(struct Generic *root, struct Object *type, void
 }
 
 unsigned int genericAddNative(struct Generic *root, struct Object *type, const void *value, const char *key) {
-    struct Generic *valueGeneric = genericCompose(type); // TODO: Handle alloc failure.
-    memcpy(genericData(valueGeneric), value, type->size);
-    return genericAdd(root, key, valueGeneric);
+    struct Generic *valueGeneric = genericCompose(type);
+    if(valueGeneric) {
+        memcpy(genericData(valueGeneric), value, type->size);
+        return genericAdd(root, key, valueGeneric);
+    }
+    return STATUS_ALLOC_ERR;
 }
 
 struct Generic *getAt(struct Generic *root, const char *path) {
-    if(path == NULL || root == NULL) return NULL;
+    if(path == NULL) return NULL;
 
     const char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
     while(tokenize(&thisToken, &nextDelim, &nextToken, PATH_SEPARATOR)) {
+        if(root == NULL) return NULL;
 
         // TODO: Handle as part of generics.
         struct Collection *collection = (struct Collection*)root->object;
@@ -191,13 +195,10 @@ struct Generic *getAt(struct Generic *root, const char *path) {
             return NULL;
         }
 
-        if(nextToken) {
-            char *key = strCopyN(thisToken, nextDelim - thisToken); // TODO: handle malloc failure.
-            root = collection->get(genericData(root), key);
-            free(key);
-        } else {
-            root = collection->get(genericData(root), thisToken);
-        }
+        char *key = strCopyN(thisToken, nextDelim - thisToken);
+        if(key == NULL) return NULL; // TODO: Fails silently.
+        root = collection->get(genericData(root), key);
+        free(key);
     }
     return root;
 }
@@ -208,13 +209,17 @@ unsigned int addAt(struct Generic *root, const char *path, struct Generic *value
     const char *thisToken = path, *nextDelim = NULL, *nextToken = NULL;
     while(tokenize(&thisToken, &nextDelim, &nextToken, PATH_SEPARATOR)) {
         if(root == NULL) return STATUS_FOUND_ERR;
+
         // Handle as part of generics.
         struct Collection *collection = (struct Collection*)root->object;
         if(collection != &Map && collection != &List && collection != &Array) {
             return STATUS_FOUND_ERR;
         }
 
-        char *key = strCopyN(thisToken, nextDelim - thisToken); // TODO: handle malloc failure.
+        char *key = strCopyN(thisToken, nextDelim - thisToken);
+        if(key == NULL) {
+            return STATUS_ALLOC_ERR;
+        }
         if(nextToken) {
             root = collection->get(genericData(root), key);
         } else {

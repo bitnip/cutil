@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "vector.h"
 #include "../integer/integer.h"
 #include "../error.h"
@@ -19,10 +20,7 @@ void vectorFree(struct Vector *vector) {
 }
 
 int vectorCompose(struct Vector *vector) {
-    vector->size = 0;
-    vector->allocSize = 0;
-    vector->freeData = NULL;
-    vector->items = NULL;
+    memset(vector, 0,  sizeof(struct Vector));
     return STATUS_OK;
 }
 
@@ -58,6 +56,7 @@ unsigned int vectorSize(const struct Vector *vector) {
 }
 
 void *vectorGet(const struct Vector *vector, int key) {
+    //TODO: Fix bounds check.
     if(key < 0) {
         key = vector->size + key + 1;
     }

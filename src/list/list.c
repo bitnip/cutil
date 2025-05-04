@@ -23,12 +23,6 @@ void listFree(struct List *list) {
 
 int listCompose(struct List *list) {
     memset(list, 0, sizeof(struct List));
-    /*list->size = 0;
-    list->head = NULL;
-    list->tail = NULL;
-    list->compare = NULL;
-    list->toString = NULL;
-    list->freeData = NULL;*/
     return STATUS_OK;
 }
 
