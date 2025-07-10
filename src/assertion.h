@@ -37,7 +37,7 @@ ASSERT_MACRO( \
 
 #define assertFloatsEqual(actual, expected) \
 ASSERT_MACRO( \
-    fabsf((actual) - (expected)) > 0.01, \
+    (actual) - (expected) > 0.01 || (actual) - (expected) < -0.01, \
     "\tActual: %f Expected: %f\n", (actual), (expected) \
 );
 
