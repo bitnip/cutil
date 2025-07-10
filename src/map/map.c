@@ -55,6 +55,11 @@ void mapRelease(struct Map *map) {
     vectorRelease(&map->buckets);
 }
 
+void mapFree(struct Map *map) {
+    mapRelease(map);
+    free(map);
+}
+
 int mapCompose(struct Map *map) {
     int result = vectorCompose(&map->buckets);
     if(result) return result;
@@ -64,6 +69,15 @@ int mapCompose(struct Map *map) {
     map->hashKey = NULL;
     map->freeKey = NULL;
     return STATUS_OK;
+}
+
+struct Map *mapAlloc() {
+    struct Map *map = malloc(sizeof(struct Map));
+    if(map == NULL) {
+        return NULL;
+    }
+    mapCompose(map);
+    return map;
 }
 
 int mapAddPair(

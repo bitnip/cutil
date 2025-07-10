@@ -10,7 +10,8 @@ SOURCE= \
 	src/resource/uri.c \
 	src/resource/resource.c \
 	src/sort/quick_sort.c \
-	src/sort/merge_sort.c
+	src/sort/merge_sort.c \
+	src/signal.c
 TEST_SOURCE= \
 	src/test.c \
 	src/integer/integer_test.c \

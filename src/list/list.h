@@ -17,6 +17,7 @@ struct List {
 };
 
 int listCompose(struct List*);
+struct List *listAlloc();
 void listRelease(struct List*);
 void listFree(struct List*);
 long long listHash(struct List*);

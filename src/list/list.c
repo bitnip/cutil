@@ -26,6 +26,13 @@ int listCompose(struct List *list) {
     return STATUS_OK;
 }
 
+struct List *listAlloc() {
+    struct List *list = malloc(sizeof(struct List));
+    if(list == NULL) return NULL;
+    listCompose(list);
+    return list;
+}
+
 int listSize(const struct List *list) {
     return list->size;
 }

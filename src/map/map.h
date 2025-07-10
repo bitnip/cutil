@@ -19,7 +19,9 @@ struct Map {
 unsigned long long ptrHash(const void *ptr); // TODO: Move
 
 int mapCompose(struct Map *map);
+struct Map *mapAlloc();
 void mapRelease(struct Map *map);
+void mapFree(struct Map *map);
 unsigned int mapSize(struct Map *map);
 int mapAdd(struct Map *map, const void *key, void *item);
 void *mapGet(struct Map *map, const void *key);
