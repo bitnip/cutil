@@ -7,7 +7,7 @@ struct ListNode {
     struct ListNode *prev;
 };
 
-struct ListNode *nodeCreate(const void *data);
-void nodeFree(struct ListNode *node, void (*freeData)(void*));
+struct ListNode *listNodeAlloc(const void *data);
+void listNodeFree(struct ListNode *node, void (*freeData)(void*));
 
 #endif

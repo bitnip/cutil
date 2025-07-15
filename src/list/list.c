@@ -10,7 +10,7 @@ void listRelease(struct List *list) {
     while(list->head != NULL) {
         struct ListNode *temp = list->head;
         list->head = list->head->next;
-        nodeFree(temp, list->freeData);
+        listNodeFree(temp, list->freeData);
         list->size--;
     }
 }
@@ -44,7 +44,7 @@ int listIsEmpty(const struct List *list) {
 void listAddHead(struct List *list, const void *data) {
     if(list == NULL || data == NULL) return;
 
-    struct ListNode *node = nodeCreate(data);
+    struct ListNode *node = listNodeAlloc(data);
 
     list->size++;
     if(list->head == NULL) {
@@ -72,7 +72,7 @@ static void listAddTailNode(struct List *list, struct ListNode *node) {
 int listAddTail(struct List *list, const void *data) {
     if(list == NULL || data == NULL) return STATUS_INPUT_ERR;
 
-    struct ListNode *node = nodeCreate(data);
+    struct ListNode *node = listNodeAlloc(data);
     if(!node) return STATUS_ALLOC_ERR;
 
     listAddTailNode(list, node);
@@ -95,7 +95,7 @@ void *listRemoveHead(struct List *list) {
         list->head->prev = NULL;
     }
 
-    nodeFree(node, NULL);
+    listNodeFree(node, NULL);
     return data;
 }
 
@@ -115,7 +115,7 @@ void *listRemoveTail(struct List *list) {
         list->tail->next = NULL;
     }
 
-    nodeFree(node, NULL);
+    listNodeFree(node, NULL);
     return data;
 }
 
@@ -247,7 +247,7 @@ void *listSwapCurrent(struct Iterator *itr, void *data) {
 int listAddCurrent(struct Iterator *itr, void *data) {
     struct List *list = itr->collection;
     struct ListNode *current = listCurrentNode(itr);
-    struct ListNode *node = nodeCreate(data);
+    struct ListNode *node = listNodeAlloc(data);
     if(!node) return STATUS_ALLOC_ERR;
     if(current) {
         switch(itr->mode) {
@@ -305,7 +305,7 @@ void *listPopCurrent(struct Iterator *itr) {
 
     void *data = node->data;
     node->data = NULL;
-    nodeFree(node, NULL);
+    listNodeFree(node, NULL);
     list->size--;
     return data;
 }
